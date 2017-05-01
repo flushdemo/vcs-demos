@@ -1,0 +1,9 @@
+// k65 F4 bank order (see system_a2600.nut): 45230167
+bank fx4;         	data _foo4 { 0 }    // 1FF8
+bank fx5;	        data _foo5 { 0 }    // 1FF9
+bank fx_vrgirl;	    data _foo2 { 0 }    // 1FF6
+bank fx3;   	    data _foo3 { 0 }    // 1FF7
+bank core; 	        data _foo0 { 0 }    // 1FF4
+bank fx1;	        data _foo1 { 0 }    // 1FF5
+bank fx6;	        data _foo6 { 0 }    // 1FFA
+bank fx7;          	data _foo7 { 0 }    // 1FFB

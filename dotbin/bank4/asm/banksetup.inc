@@ -1,0 +1,2 @@
+.define CODE_SEGMENT   "CODE4"
+.define RODATA_SEGMENT "RODATA4"

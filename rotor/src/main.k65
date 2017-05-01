@@ -1,0 +1,222 @@
+// Memory Map
+// $FE - $FF (2 bytes) [time]
+// $FD                 [fx index]
+// $F4 - $FC (9 bytes) [tt variables]
+// $F2 - $F3 (2 bytes) [tt temp var if no TT_USE_OVERLAY]
+// $F0 - $F3 (4 bytes) [tt temp var if TT_USE_OVERLAY]
+// $F2 - $F3 (2 bytes) [main loop temp var for functors]
+// $F3                 [stack init]
+// $80 $ $F3           [fx custom data / jsr calls]
+
+// permanent global variables
+var time=0xfe // 16 bits timer (0xfe & 0xff)
+var fx=0xfd
+// 0xf4 to 0xfc -> permanent TT variable
+// main loop temp variables
+var fxf=0xf2 // 16 bits pointer (0xf2 & 0xf3)
+
+var bank_core=0x1ff4, bank_music=0x1ffb, bank_music2=0x1ffa;
+var bank_fxpicture=0x1ff5;
+var bank_fxrotozoom=0x1ff6;
+var bank_fxscrollv2=0x1ff7;
+var bank_fxtunnel=0x1ff8;
+
+// fx vars
+// 6 sprite addresses
+var s1[2]=0x80, s2[2], s3[2], s4[2], s5[2], s6[2];
+// some temps
+var tmp[4];
+
+// 0 is forever (executing fx func handles fx var value change)
+
+// Music patterns are 384 frames long. So durations should be multiple
+// of 0x0180
+// 0x0000
+// 0x0180
+// 0x0300
+// 0x0480
+// 0x0600
+// ...
+data fx_durations {
+    0x01 0x00 // dummy
+    0x79 0x00 // black (nothing yet)
+    0x00 0x01 // credits
+    0x00 0x03 // Flush ... Presents
+    0x00 0x09 // tunnel
+    0x00 0x0f // rotozoom
+    0x60 0x14 // scrollv2
+    0x00 0x00 // end
+
+    // FIXME dummy data to prevent linker from stripping them
+    &<tt_player
+    &<music_back
+    &<xtt_player
+    &<xmusic_back
+}
+
+// fx functors
+data setup_lo {
+    &<setup_empty
+    //&<fxboard_isetup
+    &<setup_empty
+    &<fxcredits_isetup
+    &<fxpicture_isetup
+    &<fxtunnel_isetup
+    &<fxrotozoom_isetup
+    &<fxscrollv2_isetup
+    &<fxendcool_isetup
+}
+data setup_hi {
+    &>setup_empty
+    //&>fxboard_isetup
+    &>setup_empty
+    &>fxcredits_isetup
+    &>fxpicture_isetup
+    &>fxtunnel_isetup
+    &>fxrotozoom_isetup
+    &>fxscrollv2_isetup
+    &>fxendcool_isetup
+}
+data kernel_lo {
+    &<kernel_empty
+    //&<fxboard_ikernel
+    &<kernel_empty
+    &<fxcredits_ikernel
+    &<fxpicture_ikernel
+    &<fxtunnel_ikernel
+    &<fxrotozoom_ikernel
+    &<fxscrollv2_ikernel
+    &<fxendcool_ikernel
+}
+data kernel_hi {
+    &>kernel_empty
+    //&>fxboard_ikernel
+    &>kernel_empty
+    &>fxcredits_ikernel
+    &>fxpicture_ikernel
+    &>fxtunnel_ikernel
+    &>fxrotozoom_ikernel
+    &>fxscrollv2_ikernel
+    &>fxendcool_ikernel
+}
+data overscan_lo {
+    &<overscan_empty
+    &<overscan_empty
+    &<fxcredits_ioverscan
+    //&<overscan_empty
+    &<overscan_empty
+    &<fxtunnel_ioverscan
+    &<fxrotozoom_ioverscan
+    &<fxscrollv2_ioverscan
+    &<overscan_empty
+}
+data overscan_hi {
+    &>overscan_empty
+    &>overscan_empty
+    &>fxcredits_ioverscan
+    //&>overscan_empty
+    &>overscan_empty
+    &>fxtunnel_ioverscan
+    &>fxrotozoom_ioverscan
+    &>fxscrollv2_ioverscan
+    &>overscan_empty
+}
+data vblank_lo {
+    &<vblank_empty
+    &<vblank_empty
+    &<vblank_empty
+    &<vblank_empty
+    &<fxtunnel_ivblank
+    &<fxrotozoom_ivblank
+    &<fxscrollv2_ivblank
+    &<vblank_empty
+}
+data vblank_hi {
+    &>vblank_empty
+    &>vblank_empty
+    &>vblank_empty
+    &>vblank_empty
+    &>fxtunnel_ivblank
+    &>fxrotozoom_ivblank
+    &>fxscrollv2_ivblank
+    &>vblank_empty
+}
+
+naked setup_empty { address 0xf003 goto setup_done }
+naked kernel_empty { address 0xf009 goto screen_end_wait }
+naked overscan_empty { address 0xf00f goto overscan_end_wait }
+naked vblank_empty { address 0xf015 goto vblank_end_wait }
+
+naked fxboard_isetup { far fx_board_init goto setup_done }
+naked fxboard_ikernel { far fx_board_kernel goto screen_end_wait }
+naked fxcredits_isetup { far fx_credits_init goto setup_done }
+naked fxcredits_ikernel { far fx_credits_kernel goto screen_end_wait }
+naked fxcredits_ioverscan { far fx_credits_overscan goto overscan_end_wait }
+
+// dasm communication
+naked fxpicture_isetup { address 0xff0d a&?bank_fxpicture }
+naked fxpicture_ikernel { address 0xff13 a&?bank_fxpicture }
+naked fxendcool_isetup { address 0xff01 a&?bank_fxpicture }
+naked fxendcool_ikernel { address 0xff07 a&?bank_fxpicture }
+naked fxrotozoom_isetup { address 0xff1d a&?bank_fxrotozoom }
+naked fxrotozoom_ikernel { address 0xff23 a&?bank_fxrotozoom }
+naked fxrotozoom_ioverscan { address 0xff29 a&?bank_fxrotozoom }
+naked fxrotozoom_ivblank { address 0xff2f a&?bank_fxrotozoom }
+naked fxscrollv2_isetup { address 0xff3d a&?bank_fxscrollv2 }
+naked fxscrollv2_ikernel { address 0xff43 a&?bank_fxscrollv2 }
+naked fxscrollv2_ioverscan { address 0xff49 a&?bank_fxscrollv2 }
+naked fxscrollv2_ivblank { address 0xff4f a&?bank_fxscrollv2 }
+naked fxtunnel_isetup { address 0xff5d a&?bank_fxtunnel }
+naked fxtunnel_ikernel { address 0xff63 a&?bank_fxtunnel }
+naked fxtunnel_ioverscan { address 0xff69 a&?bank_fxtunnel }
+naked fxtunnel_ivblank { address 0xff6f a&?bank_fxtunnel }
+
+// Inter-bank jumps with no usage of stack
+naked music_jump { address 0xf0fd a&?bank_music }
+naked music_back { address 0xffec goto music_done }
+naked xmusic_jump { address 0xf1fd a&?bank_music2 }
+naked xmusic_back { address 0xf1ec goto music_done }
+
+main {
+    init tt_init s=x=0xf3 // start stack below all permanent data
+
+    {
+        overscan_start
+        a=fx a?6 <0{ goto music_jump } goto xmusic_jump
+music_done:
+	// 16 bits addition
+        c- x=1
+	a=time a+1 time=a
+	a=time+1 a+0 time+1=a
+	// Don't check for end of FX when 0
+	== {
+	   a=time == goto setup_done
+	}
+	a=fx a<< x=a
+	a=time
+	a?fx_durations,x == {
+	  x++
+	  a=time+1
+	  a?fx_durations,x == {
+	    time+1=time=a=0
+        a=fx a?5 =={ xtt_timer=a=0 xtt_cur_pat_index+1=xtt_cur_pat_index=a xtt_cur_note_index+1=xtt_cur_note_index=a xtt_envelope_index+1=xtt_envelope_index=a xtt_cur_ins+1=xtt_cur_ins=a xtt_init }
+	    fx++ x=fx fxf=a=setup_lo,x fxf+1=a=setup_hi,x goto(fxf)
+	  }
+	}
+setup_done:
+        x=fx fxf=a=overscan_lo,x fxf+1=a=overscan_hi,x goto(fxf)
+overscan_end_wait:
+        nocross{overscan_end}
+        
+        vblank_start
+        x=fx fxf=a=vblank_lo,x fxf+1=a=vblank_hi,x goto(fxf)
+vblank_end_wait:
+        nocross{vblank_end}
+        
+        screen_start
+        x=fx fxf=a=kernel_lo,x fxf+1=a=kernel_hi,x goto(fxf)
+screen_end_wait:
+        nocross{screen_end}
+
+    }always
+}

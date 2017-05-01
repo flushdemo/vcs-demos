@@ -1,0 +1,15 @@
+-system A2600
+
+banks.k65           core
+common.k65          core
+
+song_data.k65       music
+song_player.k65     music
+
+xeoui_trackdata.k65 music2
+xeoui_player.k65    music2
+
+fx_board.k65		fxboard
+fx_credits.k65		fxboard
+
+main.k65            core

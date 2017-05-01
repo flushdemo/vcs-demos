@@ -1,0 +1,438 @@
+/*
+ * TIATracker music player
+ * Copyright 2016 Andre "Kylearan" Wichmann
+ * Website: https://bitbucket.org/kylearan/tiatracker
+ * Email: andre.wichmann@gmx.de
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Song author: Bomb the bass / covered by Glafouk
+ * Song name: Miniblast
+ */
+
+ 
+ /* =====================================================================
+ * Flags
+ * =====================================================================
+ */
+[
+    // duration (number of TV frames) of a note
+    XTT_SPEED                = 4,
+    // duration of odd frames (needs XTT_USE_FUNKTEMPO)
+    XTT_ODD_SPEED            = 4,
+
+    // 1: Overlay percussion, +40 bytes
+    XTT_USE_OVERLAY          = 0,
+    // 1: Melodic instrument slide, +9 bytes
+    XTT_USE_SLIDE            = 0,
+    // 1: Goto pattern, +8 bytes
+    XTT_USE_GOTO             = 1,
+    // 1: Odd/even rows have different SPEED values, +7 bytes
+    XTT_USE_FUNKTEMPO        = 0,
+    // If the very first notes played on each channel are not PAUSE, HOLD or
+    // SLIDE, i.e. if they start with an instrument or percussion, then set
+    // this flag to 0 to save 2 bytes.
+    // 0: +2 bytes
+    XTT_STARTS_WITH_NOTES    = 1
+]
+
+
+/* =====================================================================
+ * Permanent variables. These are states needed by the player.
+ * =====================================================================
+ */
+var xtt_timer=0xf4,          // current music timer value
+    xtt_cur_pat_index[2],    // current pattern index into xtt_SequenceTable
+    xtt_cur_note_index[2],   // note index into current pattern
+    xtt_envelope_index[2],   // index into ADSR envelope
+    xtt_cur_ins[2];          // current instrument
+
+
+/* =====================================================================
+ * Temporary variables. These will be overwritten during a call to the
+ * player routine, but can be used between calls for other things.
+ * =====================================================================
+ */
+#if TT_USE_OVERLAY
+var xtt_ptr[2]=0xf0; // keep enough space on stack for 1 function call with TT_USE_OVERLAY
+#else
+var xtt_ptr[2]=0xf2;
+#endif
+
+/* =====================================================================
+ * Initialize music.
+ * Set xtt_cur_pat_index[2] to the indexes of the first patterns from
+ * xtt_SequenceTable for each channel.
+ * Set xtt_timer and xtt_cur_note_index[2] to 0.
+ * All other variables can start with any value.
+ * =====================================================================
+ */
+inline xtt_init {
+    xtt_cur_pat_index=a=0
+    xtt_cur_pat_index+1=a=12
+    // the rest should be 0 already from startup code. If not,
+    // set the following variables to 0 manually:
+    // - xtt_timer
+    // - xtt_cur_pat_index[2]
+    // - xtt_cur_note_index[2]
+}
+
+
+/*
+ * =====================================================================
+ * TIATracker melodic and percussion instruments, patterns and sequencer
+ * data.
+ * =====================================================================
+ */
+
+/*
+ * =====================================================================
+ * Melodic instrument definitions (up to 7). xtt_envelope_index holds
+ * the index values into these tables for the current instruments played
+ * in channel 0 and 1.
+ *
+ * Each instrument is defined by:
+ * - xtt_InsCtrlTable: the AUDC value
+ * - xtt_InsADIndexes: the index of the start of the ADSR envelope as
+ *      defined in xtt_InsFreqVolTable
+ * - xtt_InsSustainIndexes: the index of the start of the Sustain phase
+ *      of the envelope
+ * - xtt_InsReleaseIndexes: the index of the start of the Release phase
+ * - xtt_InsFreqVolTable: The AUDF frequency and AUDV volume values of
+ *      the envelope
+ * =====================================================================
+ */
+
+// Instrument master CTRL values
+data xtt_InsCtrlTable {
+        0x0f 0x0c 0x04 0x0c 0x06
+
+}
+
+// Instrument Attack/Decay start indexes into ADSR tables.
+data xtt_InsADIndexes {
+        0x00 0x0c 0x14 0x14 0x1c
+
+}
+
+// Instrument Sustain start indexes into ADSR tables
+data xtt_InsSustainIndexes {
+        0x08 0x10 0x18 0x18 0x24
+
+}
+
+// Instrument Release start indexes into ADSR tables
+// Caution: Values are stored with an implicit -1 modifier! To get the
+// real index, add 1.
+data xtt_InsReleaseIndexes {
+        0x09 0x11 0x19 0x19 0x25
+
+}
+
+// AUDVx and AUDFx ADSR envelope values.
+// Each byte encodes the frequency and volume:
+// - Bits 7..4: Freqency modifier for the current note ([-8..7]),
+//       8 means no change. Bit 7 is the sign bit.
+// - Bits 3..0: Volume
+// Between sustain and release is one byte that is not used and
+// can be any value.
+// The end of the release phase is encoded by a 0.
+data xtt_InsFreqVolTable {
+// 0: Guitoune
+        0xf0 0x25 0x28 0x2a 0x3c 0x2a 0x28 0x25
+        0xf0 0x00 0xf0 0x00
+// 1: Chords
+        0x27 0x6c 0x8e 0x8e 0x82 0x00 0x80 0x00
+// 2+3: Chords2
+        0x70 0x88 0x7c 0x7c 0x70 0x00 0x70 0x00
+// 4: bassline
+        0x80 0x8f 0x8f 0x8f 0x8f 0x8f 0x8f 0x8f
+        0x80 0x00 0x80 0x00
+
+}
+
+
+/*
+ * =====================================================================
+ * Percussion instrument definitions (up to 15)
+ * 
+ * Each percussion instrument is defined by:
+ * - xtt_PercIndexes: The index of the first percussion frame as defined
+ *      in xtt_PercFreqTable and xtt_PercCtrlVolTable
+ * - xtt_PercFreqTable: The AUDF frequency value
+ * - xtt_PercCtrlVolTable: The AUDV volume and AUDC values
+ * =====================================================================
+ */
+
+// Indexes into percussion definitions signifying the first frame for
+// each percussion in xtt_PercFreqTable.
+// Caution: Values are stored with an implicit +1 modifier! To get the
+// real index, subtract 1.
+data xtt_PercIndexes {
+        0x01 0x05 0x16
+
+}
+
+// The AUDF frequency values for the percussion instruments.
+// If the second to last value is negative (>=128), it means it's an
+// "overlay" percussion, i.e. the player fetches the next instrument note
+// immediately and starts it in the sustain phase next frame. (Needs
+// XTT_USE_OVERLAY)
+data xtt_PercFreqTable {
+// 0: hi
+        0x00 0x04 0x04 0x00
+// 1: Break SD
+        0x0a 0x0a 0x0b 0x0b 0x0c 0x0c 0x0d 0x0d
+        0x0e 0x0e 0x0f 0x0f 0x10 0x10 0x11 0x11
+        0x00
+// 2: Snare
+        0x07 0x0d 0x0e 0x10 0x14 0x14 0x15 0x18
+        0x18 0x19 0x1a 0x1b 0x1e 0x1f 0x00
+
+}
+
+// The AUDCx and AUDVx volume values for the percussion instruments.
+// - Bits 7..4: AUDC value
+// - Bits 3..0: AUDV value
+// 0 means end of percussion data.
+data xtt_PercCtrlVolTable {
+// 0: hi
+        0x8f 0x8a 0x84 0x00
+// 1: Break SD
+        0x8a 0x8a 0x89 0x89 0x88 0x88 0x88 0x87
+        0x87 0x87 0x86 0x84 0x83 0x83 0x81 0x80
+        0x00
+// 2: Snare
+        0x8e 0x8d 0x8d 0x8c 0x8b 0x8a 0x88 0x88
+        0x87 0x86 0x84 0x82 0x81 0x80 0x00
+
+}
+
+        
+/*
+ * =====================================================================
+ * Track definition
+ * The track is defined by:
+ * - xtt_PatternX (X=0, 1, ...): Pattern definitions
+ * - xtt_PatternPtrLo/Hi: Pointers to the xtt_PatternX tables, serving
+ *      as index values
+ * - xtt_SequenceTable: The order in which the patterns should be played,
+ *      i.e. indexes into xtt_PatternPtrLo/Hi. Contains the sequences
+ *      for all channels and sub-tracks. The variables xtt_cur_pat_index
+ *      hold an index into xtt_SequenceTable for each channel.
+ *
+ * So xtt_SequenceTable holds indexes into xtt_PatternPtrLo/Hi, which
+ * in turn point to pattern definitions (xtt_PatternX) in which the notes
+ * to play are specified.
+ * =====================================================================
+ */
+
+/*
+ * =====================================================================
+ * Pattern definitions, one table per pattern. xtt_cur_note_index
+ * holds the index values into these tables for the current pattern
+ * played in channel 0 and 1.
+ * 
+ * A pattern is a sequence of notes (one byte per note) ending with a 0.
+ * A note can be either:
+ * - Pause: Put melodic instrument into release. Must only follow a
+ *      melodic instrument.
+ * - Hold: Continue to play last note (or silence). Default "empty" note.
+ * - Slide (needs XTT_USE_SLIDE): Adjust frequency of last melodic note
+ *      by -7..+7 and keep playing it
+ * - Play new note with melodic instrument
+ * - Play new note with percussion instrument
+ * - End of pattern
+ * 
+ * A note is defined by:
+ * - Bits 7..5: 1-7 means play melodic instrument 1-7 with a new note
+ *      and frequency in bits 4..0. If bits 7..5 are 0, bits 4..0 are
+ *      defined as:
+ *      - 0: End of pattern
+ *      - [1..15]: Slide -7..+7 (needs XTT_USE_SLIDE)
+ *      - 8: Hold
+ *      - 16: Pause
+ *      - [17..31]: Play percussion instrument 1..15
+ * 
+ * The tracker must ensure that a pause only follows a melodic
+ * instrument or a hold/slide.
+ * =====================================================================
+ */
+[
+    XTT_FREQ_MASK    = 31,
+    XTT_INS_HOLD     = 8,
+    XTT_INS_PAUSE    = 16
+]
+
+// mel2
+data xtt_pattern0 {
+        0x27 0x08 0x08 0x08 0x08 0x08 0x28 0x08
+        0x27 0x08 0x27 0x08 0x08 0x08 0x27 0x08
+        0x08 0x08 0x28 0x08 0x27 0x08 0x28 0x08
+        0x27 0x08 0x28 0x08 0x27 0x08 0x28 0x08
+        0x27 0x08 0x08 0x08 0x08 0x08 0x28 0x08
+        0x27 0x08 0x27 0x08 0x08 0x08 0x27 0x08
+        0x08 0x08 0x28 0x08 0x27 0x08 0x28 0x08
+        0x27 0x08 0x28 0x08 0x27 0x08 0x28 0x08
+        0x00
+
+}
+// mel0
+data xtt_pattern1 {
+        0x56 0x08 0x08 0x08 0x56 0x08 0x56 0x08
+        0x52 0x08 0x56 0x08 0x56 0x08 0x56 0x08
+        0x52 0x08 0x56 0x08 0x11 0x08 0x08 0x08
+        0x56 0x08 0x12 0x08 0x12 0x08 0x08 0x08
+        0x52 0x08 0x08 0x08 0x52 0x08 0x52 0x08
+        0x4e 0x08 0x52 0x08 0x52 0x08 0x52 0x08
+        0x4e 0x08 0x52 0x08 0x11 0x08 0x08 0x08
+        0x52 0x08 0x12 0x08 0x12 0x08 0x08 0x08
+        0x00
+
+}
+// mel1
+data xtt_pattern2 {
+        0x58 0x08 0x08 0x08 0x58 0x08 0x58 0x08
+        0x53 0x08 0x58 0x08 0x58 0x08 0x58 0x08
+        0x53 0x08 0x58 0x08 0x11 0x08 0x08 0x08
+        0x58 0x08 0x12 0x08 0x12 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x56 0x08 0x56 0x08
+        0x52 0x08 0x56 0x08 0x56 0x08 0x56 0x08
+        0x52 0x08 0x56 0x08 0x11 0x08 0x08 0x08
+        0x56 0x08 0x12 0x08 0x12 0x08 0x08 0x08
+        0x00
+
+}
+// mel3
+data xtt_pattern3 {
+        0x56 0x08 0x08 0x08 0x08 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x08 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x08 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x08 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x56 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x56 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x56 0x08 0x08 0x08
+        0x56 0x08 0x08 0x08 0x08 0x08 0x08 0x08
+        0x00
+
+}
+// mel4
+data xtt_pattern4 {
+        0x97 0x08 0x08 0x08 0x08 0x08 0x8f 0x08
+        0x08 0x08 0x08 0x08 0x8b 0x08 0x08 0x08
+        0x08 0x08 0x08 0x08 0x11 0x08 0x08 0x08
+        0x08 0x08 0x12 0x08 0x12 0x08 0x97 0x08
+        0x97 0x08 0x08 0x08 0x08 0x08 0x08 0x8f
+        0x08 0x08 0x08 0x08 0x8b 0x08 0x08 0x08
+        0x08 0x08 0x08 0x08 0x11 0x08 0x97 0x08
+        0x97 0x08 0x12 0x08 0x12 0x08 0x97 0x08
+        0x00
+
+}
+// mel5
+data xtt_pattern5 {
+        0x27 0x97 0x08 0x08 0x08 0x08 0x28 0x8f
+        0x27 0x08 0x27 0x08 0x8b 0x08 0x27 0x08
+        0x08 0x08 0x28 0x08 0x11 0x08 0x28 0x08
+        0x27 0x08 0x28 0x08 0x12 0x08 0x28 0x97
+        0x27 0x97 0x08 0x08 0x08 0x08 0x28 0x8f
+        0x27 0x08 0x27 0x08 0x8b 0x08 0x27 0x08
+        0x08 0x08 0x28 0x08 0x27 0x08 0x28 0x97
+        0x12 0x97 0x12 0x97 0x27 0x97 0x28 0x97
+        0x00
+
+}
+// bass+drum0
+data xtt_pattern6 {
+        0xb1 0x08 0x08 0x08 0x11 0x08 0xb1 0x08
+        0x13 0x08 0x08 0x08 0xb1 0x08 0x08 0x08
+        0xb1 0x08 0x08 0x08 0xb1 0x08 0x08 0x08
+        0x13 0x08 0xb1 0x08 0xb1 0x08 0x08 0x08
+        0xae 0x08 0x08 0x08 0x11 0x08 0xae 0x08
+        0x13 0x08 0x08 0x08 0xae 0x08 0x08 0x08
+        0xae 0x08 0x08 0x08 0xae 0x08 0x08 0x08
+        0x13 0x08 0xae 0x08 0xae 0x08 0x08 0x08
+        0x00
+
+}
+// bass+drum1
+data xtt_pattern7 {
+        0xb3 0x08 0x08 0x08 0x11 0x08 0xb3 0x08
+        0x13 0x08 0x08 0x08 0xb3 0x08 0x08 0x08
+        0xb3 0x08 0x08 0x08 0xb3 0x08 0x08 0x08
+        0x13 0x08 0xb3 0x08 0xb3 0x08 0x08 0x08
+        0xb1 0x08 0x08 0x08 0x11 0x08 0xb1 0x08
+        0x13 0x08 0x08 0x08 0xb1 0x08 0x08 0x08
+        0xb1 0x08 0x08 0x08 0xb1 0x08 0x08 0x08
+        0x13 0x08 0xb1 0x08 0xb1 0x08 0x08 0x08
+        0x00
+
+}
+// drum0
+data xtt_pattern8 {
+        0x08 0x08 0x08 0x08 0x11 0x08 0x08 0x08
+        0x13 0x08 0x08 0x08 0x11 0x08 0x08 0x08
+        0x11 0x08 0x11 0x08 0x11 0x08 0x08 0x08
+        0x13 0x08 0x12 0x08 0x12 0x08 0x08 0x08
+        0x08 0x08 0x08 0x08 0x11 0x08 0x08 0x08
+        0x13 0x08 0x08 0x08 0x11 0x08 0x08 0x08
+        0x11 0x08 0x11 0x08 0x11 0x08 0x11 0x08
+        0x13 0x08 0x12 0x08 0x12 0x08 0x11 0x08
+        0x00
+
+}
+
+
+
+/*
+ * =====================================================================
+ * Pattern pointers look-up table.
+ * =====================================================================
+ */
+data xtt_PatternPtrLo {
+        &<xtt_pattern0 &<xtt_pattern1 &<xtt_pattern2 &<xtt_pattern3
+        &<xtt_pattern4 &<xtt_pattern5 &<xtt_pattern6 &<xtt_pattern7
+        &<xtt_pattern8
+}
+data xtt_PatternPtrHi {
+        &>xtt_pattern0 &>xtt_pattern1 &>xtt_pattern2 &>xtt_pattern3
+        &>xtt_pattern4 &>xtt_pattern5 &>xtt_pattern6 &>xtt_pattern7
+        &>xtt_pattern8        
+}
+
+
+/*
+ * =====================================================================
+ * Pattern sequence table. Each byte is an index into the
+ * xtt_PatternPtrLo/Hi tables where the pointers to the pattern
+ * definitions can be found. When a pattern has been played completely,
+ * the next byte from this table is used to get the address of the next
+ * pattern to play. xtt_cur_pat_index_c0/1 hold the current index values
+ * into this table for channels 0 and 1.
+ * If XTT_USE_GOTO is used, a value >=128 denotes a goto to the pattern
+ * number encoded in bits 6..0 (i.e. value AND %01111111).
+ * =====================================================================
+ */
+data xtt_SequenceTable {
+    // ---------- Channel 0 ----------
+        0x00 0x00 0x01 0x02 0x01 0x02 0x03 0x04
+        0x04 0x05 0x05 0x82
+
+        
+    // ---------- Channel 1 ----------
+        0x06 0x07 0x06 0x07 0x06 0x07 0x08 0x06
+        0x07 0x06 0x07 0x8e
+
+}

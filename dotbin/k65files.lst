@@ -1,0 +1,8 @@
+-system A2600
+
+banks.k65           core
+common.k65			core
+
+bank2/k65/fx_vrgirl.k65		fx_vrgirl
+
+main.k65            core

@@ -1,0 +1,27 @@
+To add a new song:
+
+* Frisk_variables should contain the new song "variables". Beware
+  TT_GLOBAL_SPEED must be equal to 1. The code to handle the other
+  case has been removed. 4 variables have to be moved from the
+  `_trackdata` file (TT_FREQ_MASK, TT_INS_HOLD, TT_INS_PAUSE and
+  TT_FIRST_PERC). Eventually, the file extension must be changed from
+  .asm to .inc.
+
+* Frisk_init must be copied/renamed too. Initial _tt_cur_pat_index_*
+  have to be updated according to the new song.
+
+* Frisk_player must be copied/renamed to the new song's
+  repository. The frisk_ prefix has to be updated to point to the new
+  song labels.
+
+* Frisk_trackdata contains the actual song. It must be the new song's
+  trackdata file translated to ca65.
+  - The echo at the end of the file  has to be removed.
+  - Block `IF THUND_TT_GLOBAL_SPEED = 0` has to be removed.
+
+* A couple of files have to be updated:
+  - bank0/c/main.c
+  - include/song_player.h
+  - asminc/song_player.inc
+
+TODO: trackdata conversion tool to be written.

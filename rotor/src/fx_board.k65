@@ -1,0 +1,61 @@
+// http://atariage.com/forums/topic/215825-multi-sprite-trick-behavior/
+func fx_board_init
+{
+    COLUP0=a=0x00
+    COLUP1=a=0x0F
+    NUSIZ0=a=TWO_COPIES_CLOSE
+    NUSIZ1=a=TWO_COPIES_CLOSE
+}
+
+func fxbd_line
+{
+    nocross {
+        wsync
+        COLUBK=a=0 GRP1=a=0xFF
+        {
+            *11
+            RESP0=a RESP1=a RESP0=a RESP1=a RESP0=a RESP1=a
+            RESP0=a RESP1=a RESP0=a RESP1=a RESP0=a RESP1=a
+            RESP0=a RESP1=a RESP0=a RESP1=a RESP0=a RESP1=a
+            *6
+            x--
+        }>=0
+    }
+    GRP1=a=0
+    COLUBK=a=8
+}
+
+func fxbd_line2
+{
+    nocross {
+        wsync
+        COLUBK=a=0 GRP1=a=0xFF
+        {
+            *8
+            RESP0=a RESP1=a RESP0=a RESP1=a RESP0=a RESP1=a
+            RESP0=a RESP1=a RESP0=a RESP1=a RESP0=a RESP1=a
+            RESP0=a RESP1=a RESP0=a RESP1=a RESP0=a RESP1=a
+            *9
+            x--
+        }>=0
+    }
+    GRP1=a=0
+    COLUBK=a=8
+}
+
+func fx_board_kernel
+{
+    GRP0=a=0
+    wsync COLUBK=a=8
+    x=15 fxbd_line
+    x=15 fxbd_line2
+    x=15 fxbd_line
+    x=15 fxbd_line2
+    x=15 fxbd_line
+    x=15 fxbd_line2
+    x=15 fxbd_line
+    x=15 fxbd_line2
+    x=15 fxbd_line
+    wsync COLUBK=a=0
+}
+

@@ -1,0 +1,321 @@
+/*
+ * TIATracker music player
+ * Copyright 2016 Andre "Kylearan" Wichmann
+ * Website: https://bitbucket.org/kylearan/tiatracker
+ * Email: andre.wichmann@gmx.de
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Song author: Bomb the bass / covered by Glafouk
+ * Song name: Miniblast
+ */
+
+
+/* =====================================================================
+ * TIATracker Player
+ * =====================================================================
+ */
+
+// PLANNED PLAYER VARIANTS:
+// - RAM, speed, player ROM: c0/c1 patterns have same length
+// - RAM: Pack 2 values (out of cur_pat_index, cur_note_index, envelope_index)
+//       into one and use lsr/asl to unpack them, allowing only ranges of
+//       16/16 or 32/8 for them, depending on number of patterns, max
+//       pattern size and max ADSR size
+// - ROM: Check if xtt_SequenceTable can hold ptrs directly without indexing
+//       xtt_PatternPtrLo/Hi. Can be smaller if not many patterns get repeated
+//       (saves table and decode routine)
+// - Speed: Inline xtt_calcInsIndex
+// - Speed: Store ptr to current note in RAM instead of reconstructing it?
+//       Might also save the need for cur_note_index
+
+
+/* =====================================================================
+ * Helper function: Retrieves current note. May advance pattern if needed.
+ * Gets inlined or becomes a subroutine if XTT_USE_OVERLAY is used.
+ * =====================================================================
+ */
+
+#if XTT_USE_GOTO
+inline xtt_getSequenceEntry {
+.constructPatPtr:
+    y=xtt_cur_pat_index,x
+    a=xtt_SequenceTable,y <0{
+        a&0b01111111 xtt_cur_pat_index,x=a >=goto .constructPatPtr
+    }
+}
+#else
+inline xtt_getSequenceEntry {
+    y=xtt_cur_pat_index,x
+    a=xtt_SequenceTable,y
+}
+#endif
+
+#if XTT_USE_OVERLAY
+inline xtt_getCurNoteIndex {
+    // If the V flag is set and if the new note is an instrument,
+    // it means it got pre-fetched by an overlay percussion, it has
+    // to remain in sustain.
+    o-
+    // check if note had been pre-fetched by overlay perc already
+    a=xtt_cur_note_index,x <0{
+        // If so, remove flag
+       a&0b01111111 xtt_cur_note_index,x=a
+       // Set V flag for later
+       a&?xtt_calcInsIndex
+    }
+    y=a
+}
+#else
+inline xtt_getCurNoteIndex {
+    y=xtt_cur_note_index,x
+}
+#endif
+
+inline xtt_fetchCurrentNoteImpl {
+    // Construct pattern pointer
+.constructPatPtr:
+    xtt_getSequenceEntry
+    y=a xtt_ptr=a=xtt_PatternPtrLo,y xtt_ptr+1=a=xtt_PatternPtrHi,y
+    // Get new note
+    xtt_getCurNoteIndex a=(xtt_ptr),y
+    // Pre-process new note
+    // 7..5: instrument (1..7), 4..0 (0..31): frequency
+    // 0/0: End of pattern
+    =={
+        // End of pattern: Advance to next pattern
+        xtt_cur_note_index,x=a       // a is 0
+        xtt_cur_pat_index,x++
+        !=goto .constructPatPtr     //unconditional
+    }
+}
+
+#if XTT_USE_OVERLAY
+func xtt_fetchCurrentNote { xtt_fetchCurrentNoteImpl }
+#else
+inline xtt_fetchCurrentNote { xtt_fetchCurrentNoteImpl }
+#endif
+
+/* =====================================================================
+ * Helper subroutine to minimize ROM footprint.
+ * =====================================================================
+ */
+func xtt_calcInsIndex {
+    // move upper 3 bits to lower 3
+    // The lsr opcode has bit 6 set and thus is used for a "bit"
+    // instruction in the player!
+    a>> a>> a>> a>> a>>
+    y=a
+}
+
+
+/* =====================================================================
+ * Sequencer
+ * =====================================================================
+ */
+
+#if XTT_USE_FUNKTEMPO
+inline xtt_getNextTimerValue {
+    x=[XTT_SPEED-1]
+    a=xtt_cur_note_index a>> >={ x=[XTT_ODD_SPEED-1] }
+}
+#else
+inline xtt_getNextTimerValue {
+    x=[XTT_SPEED-1]
+}
+#endif
+
+#if XTT_USE_SLIDE
+inline xtt_slideHoldSwitch {
+    ==goto xtt_pause
+    >=goto xtt_newNote
+    // --- slide/hold ---
+    // Adjust frequency and hold note in sustain.
+    // composer/tracker has to make sure that no unwanted
+    // under/overflow happens.
+    // Note: f = f + (8-(16-x)) = x + f - 8
+    a+xtt_cur_ins,x c+ a-8 xtt_cur_ins,x=a
+    >=goto xtt_finishedNewNote    
+}
+#else
+inline xtt_slideHoldSwitch {
+    <goto xtt_finishedNewNote
+    !=goto xtt_newNote
+}
+#endif
+
+#if XTT_USE_OVERLAY
+inline xtt_checkForOverlay {
+    // If V flag is set, this note had been pre-fetched. That means
+    // it should remain in sustain.
+    <<=goto xtt_finishedNewNote
+}
+#else
+inline xtt_checkForOverlay {
+}
+#endif
+
+
+inline xtt_sequencer {
+    // Decrease speed timer
+    xtt_timer-- <0{
+        // Timer ran out: Reset and do sequencer
+        xtt_getNextTimerValue xtt_timer=x
+
+        // Advance to next note for each channel
+        x=1 {
+            xtt_fetchCurrentNote
+            // Parse new note from pattern
+            a?[XTT_INS_PAUSE] xtt_slideHoldSwitch
+            
+            // --- pause ---
+xtt_pause:
+            // Get release index for current instrument. Since a pause can
+            // only follow an instrument, we don't need to handle percussion
+            // or commands.
+            a=xtt_cur_ins,x xtt_calcInsIndex
+            a=xtt_InsReleaseIndexes-1,y      // -1 b/c instruments start at #1
+            // Put it into release. Skip junk byte so index no longer indicates
+            // sustain phase.
+            c- a+1 <goto xtt_storeADIndex    // unconditional
+            
+            // --- start instrument or percussion ---
+xtt_newNote:
+            xtt_cur_ins,x=a                  // set new instrument
+            // Instrument or percussion?
+            a?[XTT_FREQ_MASK+1] >=goto xtt_startInstrument
+            
+            // --- start percussion ---
+            // Get index of envelope
+            y=a
+            // -17 because percussion start with 17
+            a=xtt_PercIndexes-17,y
+            !=goto xtt_storeADIndex          // unconditional, since index values are >0
+
+            // --- start instrument ---
+xtt_startInstrument:
+            xtt_checkForOverlay
+            // Put note into attack/decay
+            xtt_calcInsIndex
+            a=xtt_InsADIndexes-1,y           // -1 because instruments start at #1
+xtt_storeADIndex:
+            xtt_envelope_index,x=a
+            
+            // --- Finished parsing new note ---
+xtt_finishedNewNote:
+            // increase note index into pattern
+            xtt_cur_note_index,x++
+
+            // Next channel
+            x--
+        }>=0
+    }
+}
+
+
+/* =====================================================================
+ * Update registers
+ * =====================================================================
+ */
+ 
+#if XTT_STARTS_WITH_NOTES
+inline xtt_checkForStartsWithNotes {
+}
+#else
+inline xtt_checkForStartsWithNotes {
+    // This branch can be removed if track starts with a note in each channel
+    ==goto xtt_afterAudioUpdate
+}
+#endif
+
+#if XTT_USE_OVERLAY
+inline xtt_doOverlay {
+	>=0goto xtt_afterAudioUpdate
+	// Overlay percussion: Fetch next note out of order
+	xtt_fetchCurrentNote
+	// Only do something if it's a melodic instrument
+	a?[XTT_FREQ_MASK+1]
+	<goto xtt_afterAudioUpdate
+	// Instrument: Put into sustain
+	xtt_cur_ins,x=a				// set new instrument
+	xtt_calcInsIndex
+	xtt_envelope_index,x=a=xtt_InsSustainIndexes-1,y
+	// Set prefetch flag. asl-sec-ror is smaller than lda-ora #128-sta
+	xtt_cur_note_index,x<< c+ xtt_cur_note_index,x>>>
+	<0goto xtt_afterAudioUpdate
+}
+#else
+inline xtt_doOverlay {
+	goto xtt_afterAudioUpdate
+}
+#endif
+
+inline xtt_updateRegisters {
+    x=1 {
+        // Percussion or melodic instrument?
+        a=xtt_cur_ins,x xtt_checkForStartsWithNotes
+        a?[XTT_FREQ_MASK+1] >=goto xtt_instrument
+
+        // --- Percussion: Get envelope index ---
+        y=xtt_envelope_index,x
+        // Set AUDC and AUDV value from envelope
+        a=xtt_PercCtrlVolTable-1,y       // -1 because values are stored +1
+        !={ xtt_envelope_index,x++ }     // 0 means end of percussion data
+        AUDV0,x=a a>> a>> a>> a>> AUDC0,x=a
+        // Set AUDF
+        a=xtt_PercFreqTable-1,y			// -1 because values are stored +1
+		// Bit 7 (overlay) might be set, but is unused in AUDF
+		AUDF0,x=a
+		xtt_doOverlay
+
+xtt_instrument:
+        // --- Melodic instrument ---
+        // Compute index into ADSR indexes and master Ctrl tables
+		xtt_calcInsIndex
+        // Set AUDC with master value for this instrument, while we are at it
+		AUDC0,x=a=xtt_InsCtrlTable-1,y
+        // advance ADSR counter and compare to end of Sustain
+		a=xtt_envelope_index,x a?xtt_InsReleaseIndexes-1,y =={ a=xtt_InsSustainIndexes-1,y }
+		y=a
+        // Set volume from envelope
+		a=xtt_InsFreqVolTable,y !={ y++ }	// 0 means end of release has been reached
+		xtt_envelope_index,x=y
+        AUDV0,x=a
+        // Now adjust frequency with ADSR value from envelope
+		a>> a>> a>> a>> c- a+xtt_cur_ins,x c+ a-8
+        AUDF0,x=a
+		
+xtt_afterAudioUpdate:
+        // Next channel
+        x--
+    }>=0
+}
+
+
+naked xtt_player_back {
+    address 0xf1e9
+    a&?bank_core
+}
+/* =====================================================================
+ * Music player entry. Call once per frame.
+ * =====================================================================
+ */
+naked xtt_player {
+    address 0xf200
+    xtt_sequencer
+    xtt_updateRegisters
+    goto xtt_player_back
+}
+

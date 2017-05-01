@@ -1,0 +1,20 @@
+main
+{
+	init
+
+    overscan_start
+    far fx_vrgirl_init
+ 
+	{
+        nocross{overscan_end}
+        vblank_start
+        far fx_vrgirl_vblank
+        nocross{vblank_end}
+
+        screen_start
+        far fx_vrgirl_kernel
+        nocross{screen_end}
+
+        overscan_start
+	} always
+}
