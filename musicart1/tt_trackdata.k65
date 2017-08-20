@@ -1,0 +1,82 @@
+/*
+ * TIATracker music player
+ * Copyright 2016 Andre "Kylearan" Wichmann
+ * Website: https://bitbucket.org/kylearan/tiatracker
+ * Email: andre.wichmann@gmx.de
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Song author: %%AUTHOR%%
+ * Song name: %%NAME%%
+ */
+
+
+data tt_%%NAME%%_song {
+    &<tt_%%NAME%%_InsCtrlTable-1 &>tt_%%NAME%%_InsCtrlTable-1
+    &<tt_%%NAME%%_InsADIndexes-1 &>tt_%%NAME%%_InsADIndexes-1
+    &<tt_%%NAME%%_InsSustainIndexes-1 &>tt_%%NAME%%_InsSustainIndexes-1
+    &<tt_%%NAME%%_InsReleaseIndexes-1 &>tt_%%NAME%%_InsReleaseIndexes-1
+    &<tt_%%NAME%%_InsFreqVolTable &>tt_%%NAME%%_InsFreqVolTable
+    &<tt_%%NAME%%_PercIndexes-17 &>tt_%%NAME%%_PercIndexes-17
+    &<tt_%%NAME%%_PercFreqTable-1 &>tt_%%NAME%%_PercFreqTable-1
+    &<tt_%%NAME%%_PercCtrlVolTable-1 &>tt_%%NAME%%_PercCtrlVolTable-1
+    &<tt_%%NAME%%_PatternSpeeds &>tt_%%NAME%%_PatternSpeeds
+    &<tt_%%NAME%%_SequenceTable &>tt_%%NAME%%_SequenceTable
+    &<tt_%%NAME%%_PatternPtrLo &>tt_%%NAME%%_PatternPtrLo
+    &<tt_%%NAME%%_PatternPtrHi &>tt_%%NAME%%_PatternPtrHi
+tt_%%NAME%%_flags:
+    %%GLOBALSPEED%% [%%EVENSPEED%%-1] [%%ODDSPEED%%-1] %%USEFUNKTEMPO%%
+tt_%%NAME%%_initdata:
+    %%C0INIT%% %%C1INIT%%
+    // put any table that might be empty here to avoid warning
+tt_%%NAME%%_PatternSpeeds:
+    %%PATTERNSPEEDS%%
+tt_%%NAME%%_PercIndexes:
+    %%PERCINDEXES%%
+tt_%%NAME%%_PercFreqTable:
+    %%PERCFREQTABLE%%
+tt_%%NAME%%_PercCtrlVolTable:
+    %%PERCCTRLVOLTABLE%%
+}
+
+data tt_%%NAME%%_InsCtrlTable {
+%%INSCTRLTABLE%%
+}
+data tt_%%NAME%%_InsADIndexes {
+%%INSADINDEXES%%
+}
+data tt_%%NAME%%_InsSustainIndexes {
+%%INSSUSTAININDEXES%%
+}
+data tt_%%NAME%%_InsReleaseIndexes {
+%%INSRELEASEINDEXES%%
+}
+data tt_%%NAME%%_InsFreqVolTable {
+%%INSFREQVOLTABLE%%
+}
+
+%%PATTERNDEFS%% // this one must be renamed manually after since it contains the field name
+data tt_%%NAME%%_PatternPtrLo {
+%%PATTERNPTRLO%%
+}
+data tt_%%NAME%%_PatternPtrHi {
+%%PATTERNPTRHI%%
+}
+data tt_%%NAME%%_SequenceTable {
+    // ---------- Channel 0 ----------
+%%SEQUENCECHANNEL0%%
+    // ---------- Channel 1 ----------
+%%SEQUENCECHANNEL1%%
+}

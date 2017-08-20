@@ -1,0 +1,127 @@
+[
+  BUFFER_SIZE = 24
+]
+
+data palette {
+     0x3A 0x3A 0x7E 0x7E 0x7E 0x9C 0x9C 0xAE 0xAE 0xBC 0xBC 0xCE 0xCE 0xDE 0xDE 0xDE
+}
+
+data gfx_playfield_A {
+  &<blaster05a_pf0 &>blaster05a_pf0
+  &<blaster05a_pf1 &>blaster05a_pf1
+  &<blaster05a_pf2 &>blaster05a_pf2
+  &<blaster05a_pf3 &>blaster05a_pf3
+  &<blaster05a_pf4 &>blaster05a_pf4
+  &<blaster05a_pf5 &>blaster05a_pf5
+}
+
+data gfx_playfield_B {
+  &<blaster05b_pf0 &>blaster05b_pf0
+  &<blaster05b_pf1 &>blaster05b_pf1
+  &<blaster05b_pf2 &>blaster05b_pf2
+  &<blaster05b_pf3 &>blaster05b_pf3
+  &<blaster05b_pf4 &>blaster05b_pf4
+  &<blaster05b_pf5 &>blaster05b_pf5
+}
+
+// tmp and A are overwritten
+func randint {
+  tmp=a a<< a^tmp
+  tmp=a a>> a^tmp
+  tmp=a a<< a<< a^tmp
+}
+
+// Register A contains the number of items - 1 to replace
+// Note: A, X and Y are overwritten
+func use_palette {
+  // Use colors from palette
+  x=a {
+    a=buffer,x a>> a>> a>> a>>
+    y=a a=palette,y
+    buffer,x=a x--
+  } >=0
+}
+
+// A register contains the count of numbers to generate
+// Both tmp, tmp2, A, X and Y are overwritten
+func generate_fxrnd {
+  c+ a-1 tmp2=a x=a
+  a=rng_seed { randint buffer,x=a x-- } >=0
+  a=tmp2 use_palette
+}
+
+func gfx_bg {
+  COLUPF=a=0
+  y=0 a=buffer {
+    wsync
+    a=buffer,x
+    COLUBK=a
+    PF0=a=(gfx_ptr),y
+    PF1=a=(gfx_ptr+2),y
+    PF2=a=(gfx_ptr+4),y
+    PF0=a=(gfx_ptr+6),y
+    PF1=a=(gfx_ptr+8),y
+    PF2=a=(gfx_ptr+10),y
+    y++
+    a=y a>> a>> a>> x=a
+    y?192 // up to 248 !
+  } !=
+  COLUBK=COLUPF=PF0=PF1=PF2=a=0
+}
+
+inline gfx_select_A { x=11 { gfx_ptr,x=a=gfx_playfield_A,x x-- } >=0 }
+inline gfx_select_B { x=11 { gfx_ptr,x=a=gfx_playfield_B,x x-- } >=0 }
+inline gfx_graph_switch {
+  a=gfx_graph_ix a^0x01 gfx_graph_ix=a
+  gfx_graph_cnt=a=5 // 0.1 second
+}
+
+func gfx_update {
+  a=cur_song_ix
+  a?0x11 =={ goto .freq_based } // Jumbo
+  a?0x18 =={ goto .freq_based } // Versatile
+  goto .volume_based
+
+.freq_based:
+  a=AUDF0s a?p_AUDF0s !={ goto .stimulis }
+  a=AUDF1s a?p_AUDF1s !={ goto .stimulis }
+  goto .skip
+
+.volume_based:
+  a=p_AUDV0s a?AUDV0s <{ goto .stimulis }
+  a=p_AUDV1s a?AUDV1s <{ goto .stimulis }
+  goto .skip
+
+.stimulis:
+  rng_seed++ =={rng_seed++}
+  a=gfx_graph_cnt =={ gfx_graph_switch }
+.skip:
+  a=gfx_graph_ix =={ gfx_select_A goto .end }
+  gfx_select_B
+.end:
+  a=gfx_graph_cnt !={ gfx_graph_cnt-- }
+  p_AUDF0s=a=AUDF0s p_AUDF1s=a=AUDF1s // Backup content of AUDFxs into p_AUDFxs
+  p_AUDV0s=a=AUDV0s p_AUDV1s=a=AUDV1s // Backup content of AUDVxs into p_AUDVxs
+  a=BUFFER_SIZE generate_fxrnd
+}
+
+func gfx_transition {
+  COLUBK=COLUPF=PF0=PF1=PF2=a=0
+  a=frames_cnt a>> a>> a>> =={ c- a+1 } rng_seed=a
+  tmp2=a=30 {
+    x=4 a=rng_seed { randint buffer,x=a x-- } >=0
+    rng_seed=a=buffer
+    a=1 use_palette
+    wsync wsync wsync wsync
+    a=buffer
+    COLUBK=a
+    COLUPF=a=buffer+1
+    PF0=a=buffer+2
+    PF1=a=buffer+3
+    PF2=a=buffer+4
+    tmp2--
+  } !=
+  wsync wsync wsync wsync
+  wsync wsync wsync wsync
+  COLUBK=COLUPF=PF0=PF1=PF2=a=0
+}

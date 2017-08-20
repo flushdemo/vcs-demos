@@ -1,0 +1,377 @@
+data song_players_lo {
+    &<tt_player1-1
+    &<tt_player2-1
+    &<tt_player3-1
+    &<tt_player4-1
+    &<tt_player5-1
+}
+data song_players_hi {
+    &>tt_player1-1
+    &>tt_player2-1
+    &>tt_player3-1
+    &>tt_player4-1
+    &>tt_player5-1
+}
+var bank_zik1=0x1ffb,
+    bank_zik2=0x1ffa,
+    bank_zik3=0x1ff9,
+    bank_zik4=0x1ff8,
+    bank_zik5=0x1ff7,
+    bank_zik6=0x1ff6,
+    bank_zik7=0x1ff5,
+    bank_core=0x1ff4;
+naked tt_player_back { address 0xffec goto tt_player_done }
+naked tt_player1 { address 0xf400 a&?bank_zik1 }
+naked tt_player2 { address 0xf403 a&?bank_zik2 }
+naked tt_player3 { address 0xf406 a&?bank_zik3 }
+naked tt_player4 { address 0xf409 a&?bank_zik4 }
+naked tt_player5 { address 0xf40c a&?bank_zik5 }
+naked tt_player6 { address 0xf40f a&?bank_zik6 }
+naked tt_player7 { address 0xf412 a&?bank_zik7 }
+
+data song_count { 32 } // change the vcsconv scramble lines as well
+data song_shuffle0 {
+    //0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+    //17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+    8 18 19 27 15 0 1 21 31 2 23 29 5 12 7 4
+    26 6 14 10 11 9 22 16 28 13 17 30 20 3 25 24
+}
+data song_shuffle0_rev {
+    5 6 9 29 15 12 17 14 0 21 19 20 13 25 18 4
+    23 26 1 2 28 7 22 10 31 30 16 3 24 11 27 8
+}
+// $vcsconv$ scramble -n song_shuffle1 -r --max 31 --seed 0x12345678
+data song_shuffle1 {
+    nocross
+    0x04 0x18 0x09 0x19 0x1B 0x1D 0x08 0x14 0x06 0x1A 0x16 0x0B 0x03 0x15 0x0C 0x10
+    0x0D 0x1F 0x0F 0x12 0x0E 0x0A 0x05 0x00 0x17 0x07 0x13 0x1C 0x11 0x02 0x1E 0x01
+song_shuffle1_rev:
+    0x17 0x1F 0x1D 0x0C 0x00 0x16 0x08 0x19 0x06 0x02 0x15 0x0B 0x0E 0x10 0x14 0x12
+    0x0F 0x1C 0x13 0x1A 0x07 0x0D 0x0A 0x18 0x01 0x03 0x09 0x04 0x1B 0x05 0x1E 0x11
+}
+// $vnocscv$
+// $vcsconv$ scramble -n song_shuffle2 -r --max 31 --seed 0xDEADBEEF
+data song_shuffle2 {
+    nocross
+    0x0C 0x19 0x1A 0x15 0x07 0x12 0x0E 0x10 0x03 0x1E 0x11 0x00 0x14 0x18 0x13 0x05
+    0x09 0x06 0x1B 0x01 0x08 0x1D 0x17 0x0A 0x1C 0x1F 0x0B 0x04 0x02 0x0F 0x0D 0x16
+song_shuffle2_rev:
+    0x0B 0x13 0x1C 0x08 0x1B 0x0F 0x11 0x04 0x14 0x10 0x17 0x1A 0x00 0x1E 0x06 0x1D
+    0x07 0x0A 0x05 0x0E 0x0C 0x03 0x1F 0x16 0x0D 0x01 0x02 0x12 0x18 0x15 0x09 0x19
+}
+// $vnocscv$
+// $vcsconv$ scramble -n song_shuffle3 -r --max 31 --seed 0xA1C0FFEE
+data song_shuffle3 {
+    nocross
+    0x06 0x07 0x13 0x0C 0x01 0x16 0x0D 0x1A 0x14 0x1F 0x08 0x19 0x18 0x0A 0x12 0x1D
+    0x04 0x17 0x0B 0x10 0x0E 0x1B 0x09 0x1E 0x05 0x03 0x15 0x00 0x1C 0x02 0x0F 0x11
+song_shuffle3_rev:
+    0x1B 0x04 0x1D 0x19 0x10 0x18 0x00 0x01 0x0A 0x16 0x0D 0x12 0x03 0x06 0x14 0x1E
+    0x13 0x1F 0x0E 0x02 0x08 0x1A 0x05 0x11 0x0C 0x0B 0x07 0x15 0x1C 0x0F 0x17 0x09
+}
+// $vnocscv$
+// $vcsconv$ scramble -n song_shuffle4 -r --max 31 --seed 0x13572468
+data song_shuffle4 {
+    nocross
+    0x09 0x1D 0x1E 0x1C 0x1F 0x19 0x0A 0x0E 0x1B 0x0D 0x13 0x07 0x0F 0x0B 0x11 0x06
+    0x02 0x10 0x14 0x17 0x08 0x0C 0x16 0x01 0x12 0x15 0x04 0x05 0x00 0x1A 0x03 0x18
+song_shuffle4_rev:
+    0x1C 0x17 0x10 0x1E 0x1A 0x1B 0x0F 0x0B 0x14 0x00 0x06 0x0D 0x15 0x09 0x07 0x0C
+    0x11 0x0E 0x18 0x0A 0x12 0x19 0x16 0x13 0x1F 0x05 0x1D 0x08 0x03 0x01 0x02 0x04
+}
+// $vnocscv$
+// $vcsconv$ scramble -n song_shuffle5 -r --max 31 --seed 0x13318234
+data song_shuffle5 {
+    nocross
+    0x0A 0x09 0x1D 0x14 0x11 0x07 0x0D 0x1E 0x02 0x10 0x06 0x01 0x0F 0x15 0x16 0x0C
+    0x03 0x12 0x1C 0x1F 0x05 0x0E 0x0B 0x13 0x00 0x1A 0x19 0x18 0x17 0x04 0x08 0x1B
+song_shuffle5_rev:
+    0x18 0x0B 0x08 0x10 0x1D 0x14 0x0A 0x05 0x1E 0x01 0x00 0x16 0x0F 0x06 0x15 0x0C
+    0x09 0x04 0x11 0x17 0x03 0x0D 0x0E 0x1C 0x1B 0x1A 0x19 0x1F 0x12 0x02 0x07 0x13
+}
+// $vnocscv$
+// $vcsconv$ scramble -n song_shuffle6 -r --max 31 --seed 0x81580082
+data song_shuffle6 {
+    nocross
+    0x12 0x08 0x03 0x17 0x0D 0x1C 0x1B 0x04 0x1F 0x06 0x16 0x0F 0x01 0x0C 0x00 0x14
+    0x0B 0x09 0x11 0x07 0x1D 0x15 0x02 0x18 0x1E 0x1A 0x0A 0x05 0x13 0x19 0x0E 0x10
+song_shuffle6_rev:
+    0x0E 0x0C 0x16 0x02 0x07 0x1B 0x09 0x13 0x01 0x11 0x1A 0x10 0x0D 0x04 0x1E 0x0B
+    0x1F 0x12 0x00 0x1C 0x0F 0x15 0x0A 0x03 0x17 0x1D 0x19 0x06 0x05 0x14 0x18 0x08
+}
+// $vnocscv$
+data song_shuffle_lo {
+    &<song_shuffle0
+    &<song_shuffle1
+    &<song_shuffle2
+    &<song_shuffle3
+    &<song_shuffle4
+    &<song_shuffle5
+    &<song_shuffle6
+}
+data song_shuffle_hi {
+    &>song_shuffle0
+    &>song_shuffle1
+    &>song_shuffle2
+    &>song_shuffle3
+    &>song_shuffle4
+    &>song_shuffle5
+    &>song_shuffle6
+}
+data song_shuffle_rev_lo {
+    &<song_shuffle0_rev
+    &<song_shuffle1_rev
+    &<song_shuffle2_rev
+    &<song_shuffle3_rev
+    &<song_shuffle4_rev
+    &<song_shuffle5_rev
+    &<song_shuffle6_rev
+}
+data song_shuffle_rev_hi {
+    &>song_shuffle0_rev
+    &>song_shuffle1_rev
+    &>song_shuffle2_rev
+    &>song_shuffle3_rev
+    &>song_shuffle4_rev
+    &>song_shuffle5_rev
+    &>song_shuffle6_rev
+}
+data song_duration { // in index of song_table order, not storage order
+    // duration in seconds, max of 255 seconds
+    123 198 122 115 172 86 81 145
+    215 114 107 191 153 121 167 102
+    112 107 153 130 92 102 121 152
+    214 130 122 140 99 92 62 99
+}
+data song_table {
+    // 4 LSB: song index, 4 MSB: bank index
+    0x00 0x01 0x43 0x02 0x03 0x04 0x05 0x20
+    0x21 0x22 0x23 0x41 0x10 0x11 0x12 0x13
+    0x14 0x15 0x06 0x16 0x30 0x42 0x40 0x24
+    0x31 0x32 0x33 0x34 0x17 0x18 0x44 0x35
+
+    // prevent linker strip
+    &<tt_player_back
+    &<tt1_player &<tt1_player_back &<songs1_lo &<songs1_hi
+    &<tt2_player &<tt2_player_back &<songs2_lo &<songs2_hi
+    &<tt3_player &<tt3_player_back &<songs3_lo &<songs3_hi
+    &<tt4_player &<tt4_player_back &<songs4_lo &<songs4_hi
+    &<tt5_player &<tt5_player_back &<songs5_lo &<songs5_hi
+}
+
+bank zik1
+data songs1_lo {
+    &<tt_altazar_song
+    &<tt_bronskyboy_song
+    &<tt_cochonfluo_song
+    &<tt_diplozore_song
+    &<tt_erzatz_song
+    &<tt_forward_song
+    &<tt_namaste_song
+}
+data songs1_hi {
+    &>tt_altazar_song
+    &>tt_bronskyboy_song
+    &>tt_cochonfluo_song
+    &>tt_diplozore_song
+    &>tt_erzatz_song
+    &>tt_forward_song
+    &>tt_namaste_song
+}
+
+bank zik2
+data songs2_lo {
+    &<tt_jirochimask_song
+    &<tt_jumbo_song
+    &<tt_kleptz_song
+    &<tt_koniec_song
+    &<tt_miniprix_song
+    &<tt_mygaloux_song
+    &<tt_niouhorlinze_song
+    &<tt_uchronie_song
+    &<tt_versatile_song
+}
+data songs2_hi {
+    &>tt_jirochimask_song
+    &>tt_jumbo_song
+    &>tt_kleptz_song
+    &>tt_koniec_song
+    &>tt_miniprix_song
+    &>tt_mygaloux_song
+    &>tt_niouhorlinze_song
+    &>tt_uchronie_song
+    &>tt_versatile_song
+}
+
+bank zik3
+data songs3_lo {
+    &<tt_frisk_song
+    &<tt_gelt_song
+    &<tt_goopoo_song
+    &<tt_hecto_song
+    &<tt_sagouin_song
+}
+data songs3_hi {
+    &>tt_frisk_song
+    &>tt_gelt_song
+    &>tt_goopoo_song
+    &>tt_hecto_song
+    &>tt_sagouin_song
+}
+
+bank zik4
+data songs4_lo {
+    &<tt_Pikaboo_song
+    &<tt_salami_song
+    &<tt_saluatoa_song
+    &<tt_sambou_song
+    &<tt_skweeenaughtik_song
+    &<tt_zetax_song
+}
+data songs4_hi {
+    &>tt_Pikaboo_song
+    &>tt_salami_song
+    &>tt_saluatoa_song
+    &>tt_sambou_song
+    &>tt_skweeenaughtik_song
+    &>tt_zetax_song
+}
+
+bank zik5
+data songs5_lo {
+    &<tt_sabrinoux_song
+    &<tt_ishtar_song
+    &<tt_quilo_song
+    &<tt_canette_song
+    &<tt_yiearkungfu_song
+}
+data songs5_hi {
+    &>tt_sabrinoux_song
+    &>tt_ishtar_song
+    &>tt_quilo_song
+    &>tt_canette_song
+    &>tt_yiearkungfu_song
+}
+
+bank core
+data songs_meta_data {
+	charset " abcdefghijklmnopqrstuvwxyz08"
+	evaluator [x*8]
+songs1_meta:
+    "  altazar   "
+    "            "
+    " bronskyboy "
+    "    cover   "
+    "   cochon   "
+    "    fluo    "
+    " diplozore  "
+    "            "
+    "  erzatz    "
+    "     light  "
+    "  forward   "
+    "            "
+    "  namaste   "
+    "            "
+songs2_meta:
+    " jirochimas "
+    "            "
+    "   jumbo    "
+    "            "
+    " k l e p t z"
+    "            "
+    "   koniec   "
+    "            "
+    "    mini    "
+    "    prix    "
+    "  mygaloux  "
+    "            "
+    "niou orlinze"
+    " lv88 cover "
+    "  uchronie  "
+    "            "
+    " versatile  "
+    "            "
+songs3_meta:
+    " f r i s k  "
+    "            "
+    "  g e l t   "
+    "            "
+    "   go0po0   "
+    "            "
+    "   hecto    "
+    "            "
+    "  sagouin   "
+    "            "
+songs4_meta:
+    "  pikabooo  "
+    "            "
+    "s a l a m i "
+    "            "
+    "salut a toi "
+    "berus cover "
+    "  samboux   "
+    "            "
+    "   skweee   "
+    "  naughtik  "
+    " z e t a x  "
+    "            "
+songs5_meta:
+    " sabrinoux  "
+    "boobs cover "
+    "   ishtar   "
+    "            "
+    " q u i l o  "
+    "            "
+    "  canette   "
+    " xtra light "
+    "yie ar kung "
+    "  fu cover  "
+}
+data songs_meta_lo {
+    &<songs1_meta
+    &<songs2_meta
+    &<songs3_meta
+    &<songs4_meta
+    &<songs5_meta
+}
+data songs_meta_hi {
+    &>songs1_meta
+    &>songs2_meta
+    &>songs3_meta
+    &>songs4_meta
+    &>songs5_meta
+}
+
+// song field offsets in structure
+[
+    TT_INSCTRLTABLE         = 0
+    TT_INSADINDEXES         = 2
+    TT_INSSUSTAININDEXES    = 4
+    TT_INSRELEASEINDEXES    = 6
+    TT_INSFREQVOLTABLE      = 8
+    TT_PERCINDEXES          = 10
+    TT_PERCFREQTABLE        = 12
+    TT_PERCCTRLVOLTABLE     = 14
+    TT_PATTERNSPEEDS        = 16
+    TT_SEQUENCETABLE        = 18
+    TT_PATTERNPTRLO         = 20
+    TT_PATTERNPTRHI         = 22
+    TT_PTR_SZ               = 24
+    // 1: Global song speed, 0: Each pattern has individual speed
+    TT_GLOBAL_SPEED         = 0+TT_PTR_SZ
+    // duration (number of TV frames) of a note
+    TT_SPEED                = 1+TT_PTR_SZ
+    // duration of odd frames (needs TT_USE_FUNKTEMPO)
+    TT_ODD_SPEED            = 2+TT_PTR_SZ
+    // 1: Odd/even rows have different SPEED values, +7 bytes
+    TT_USE_FUNKTEMPO        = 3+TT_PTR_SZ
+    // first pattern index
+    TT_C0INIT               = 4+TT_PTR_SZ
+    TT_C1INIT               = 5+TT_PTR_SZ
+]
+
+[
+    TT_FREQ_MASK    = 31,
+    TT_INS_HOLD     = 8,
+    TT_INS_PAUSE    = 16
+]

@@ -1,0 +1,57 @@
+-system A2600
+
+banks.k65           core
+common.k65			core
+songs.k65           core
+print.k65           core
+gfx_blaster_a.k65	    gfx1
+gfx_blaster_b.k65	    gfx1
+gfx_bg.k65	        gfx1
+gfx_intro_data.k65	    gfx2
+gfx_intro.k65		    gfx2
+
+// song_player_min + bank overhead size = 229
+songs/Altazar_trackdata.k65         zik1
+songs/BronskyBoy_trackdata.k65      zik1
+songs/CochonFluo_trackdata.k65      zik1
+songs/Diplozore_trackdata.k65       zik1
+songs/Erzatz_light_trackdata.k65    zik1
+songs/Forward_trackdata.k65         zik1
+songs/Namaste_trackdata.k65         zik1
+
+songs/Jirochimask_trackdata.k65     zik2
+songs/Jumbo_trackdata.k65           zik2
+songs/Kleptz_trackdata.k65          zik2
+songs/Koniec_trackdata.k65          zik2
+songs/MiniPrix_trackdata.k65        zik2
+songs/Mygaloux_trackdata.k65        zik2
+songs/Niou-Orlinz_trackdata.k65     zik2
+songs/Uchronie_trackdata.k65        zik2
+songs/Versatile_trackdata.k65       zik2
+
+songs/Frisk_trackdata.k65           zik3
+songs/Gelt_trackdata.k65            zik3
+songs/Go0Po0_trackdata.k65          zik3
+songs/hecto_trackdata.k65           zik3
+songs/Sagouin_trackdata.k65         zik3
+
+songs/Sambou_trackdata.k65          zik4
+songs/pikaboo_trackdata.k65         zik4
+songs/Salami_trackdata.k65          zik4
+songs/SalutAToi_trackdata.k65       zik4
+songs/Zetax_trackdata.k65           zik4
+songs/SkweeeNaughtik_trackdata.k65  zik4 // 497
+
+songs/sabrinouxPal_trackdata.k65    zik5
+songs/ishtar_trackdata.k65          zik5
+songs/quilo_trackdata.k65           zik5
+songs/Canette_Xtralight_Pal_trackdata.k65 zik5
+songs/YieAreKungFu_trackdata.k65    zik5
+
+song_player1.k65    zik1
+song_player2.k65    zik2
+song_player3.k65    zik3
+song_player4.k65    zik4
+song_player5.k65    zik5
+
+main.k65            core

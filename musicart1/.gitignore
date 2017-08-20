@@ -1,0 +1,12 @@
+*~
+*.o
+*.lst
+*.exe
+*.sym
+/program.bin
+/program.sym
+/tmp
+/cfg
+/snap
+/vcsconv
+!k65files.lst

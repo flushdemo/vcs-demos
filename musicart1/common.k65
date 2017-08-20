@@ -1,0 +1,150 @@
+[
+    PAL     = 1,
+    NTSC    = 0
+]
+
+#if PAL
+[
+    TIM_VBLANK      = 38,
+    TIM_OVERSCAN    = 24,
+    TIM_KERNEL      = 20
+
+    OSC_RATE        = 3546894
+]
+#else
+[
+    TIM_VBLANK      = 45,
+    TIM_OVERSCAN    = 38,
+    TIM_KERNEL      = 15
+
+    OSC_RATE        = 3579575
+]
+#endif
+
+inline init { i+ d- x=0 a=x {x-- s=x a!!}!= }
+
+inline wsync {WSYNC=a}
+inline vsync {VSYNC=a}
+inline hmove {HMOVE=a}
+inline hmclr {HMCLR=a}
+inline timwait {{a=INTIM}!=}
+
+inline vblank_start {
+	a=0b00001110
+	{wsync vsync a>>}!=
+	VBLANK=a=2 TIM64T=a=[TIM_VBLANK]
+}
+inline vblank_end {timwait wsync VBLANK=a=0}
+
+inline screen_start {T1024T=a=[TIM_KERNEL]}
+inline screen_end {timwait wsync}
+
+inline overscan_start {VBLANK=a=2 TIM64T=a=[TIM_OVERSCAN]}
+inline overscan_end {timwait}
+
+// size-optimized sleep macros with side-effects
+// might trash a, stack, flags
+inline sl2 {*2}
+inline sl3 {*3}
+inline sl4 {*4}
+var sleep_dummy_addr_2d = 0x2d;
+inline sl5 {sleep_dummy_addr_2d--}
+inline sl6 {*6}
+inline sl7 {sl5 *2}
+inline sl8 {sl6 *2}
+inline sl9 {sl5 *4}
+inline sl10 {sl5 sl5}
+inline sl11 {sl5 sl6}
+inline sl12 {sl6 sl6}
+inline sl13 {sl7 sl6}
+inline sl14 {sl12 sl2}
+inline sl15 {sl12 sl3}
+inline sl16 {sl12 sl4}
+inline sl17 {sl12 sl5}
+inline sl18 {sl12 sl6}
+inline sl19 {sl12 sl7}
+inline sl20 {sl12 sl8}
+inline sl21 {sl12 sl9}
+inline sl22 {sl12 sl10}
+inline sl23 {sl12 sl11}
+inline sl24 {sl12 sl12}
+
+// NUSIZ
+[
+	MSL_SIZE_1 = 16*0,
+	MSL_SIZE_2 = 16*1,
+	MSL_SIZE_4 = 16*2,
+	MSL_SIZE_8 = 16*3
+]
+[
+	ONE_COPY = 0,
+	TWO_COPIES_CLOSE = 1,
+	TWO_COPIES_MEDIUM = 2,
+	THREE_COPIES_CLOSE = 3,
+	TWO_COPIES_WIDE = 4,
+	DOUBLE_SIZED_PLAYER = 5,
+	THREE_COPIES_MEDIUM = 6,
+	QUAD_SIZED_PLAYER = 7
+]
+
+// CTRLPF
+[
+	BALL_SIZE_1 = 16*0,
+	BALL_SIZE_2 = 16*1,
+	BALL_SIZE_4 = 16*2,
+	BALL_SIZE_8 = 16*3
+]
+[
+	PF_MIRRORED = 1,
+	PF_SCOREMODE = 2,
+	PF_PRIO_BALLABOVE = 4
+]
+
+// ENAx
+[
+	OBJ_DISABLE = 0,
+	OBJ_ENABLE = 2
+]
+
+// VDELx
+[
+	VDEL_DISABLE = 0,
+	VDEL_ENABLE = 1
+]
+
+// HMx
+[
+	HM_LEFT_7 = 7*16,
+	HM_LEFT_6 = 6*16,
+	HM_LEFT_5 = 5*16,
+	HM_LEFT_4 = 4*16,
+	HM_LEFT_3 = 3*16,
+	HM_LEFT_2 = 2*16,
+	HM_LEFT_1 = 1*16,
+	HM_NO_MOTION = 0,
+	HM_RIGHT_1 = 15*16,
+	HM_RIGHT_2 = 14*16,
+	HM_RIGHT_3 = 13*16,
+	HM_RIGHT_4 = 12*16,
+	HM_RIGHT_5 = 11*16,
+	HM_RIGHT_6 = 10*16,
+	HM_RIGHT_7 = 9*16,
+	HM_RIGHT_8 = 8*16,
+	
+	HM74_LEFT_15 = 7*16,
+	HM74_LEFT_14 = 6*16,
+	HM74_LEFT_13 = 5*16,
+	HM74_LEFT_12 = 4*16,
+	HM74_LEFT_11 = 3*16,
+	HM74_LEFT_10 = 2*16,
+	HM74_LEFT_9 = 1*16,
+	HM74_LEFT_8 = 0*16,
+	HM74_LEFT_7 = 15*16,
+	HM74_LEFT_6 = 14*16,
+	HM74_LEFT_5 = 13*16,
+	HM74_LEFT_4 = 12*16,
+	HM74_LEFT_3 = 11*16,
+	HM74_LEFT_2 = 10*16,
+	HM74_LEFT_1 = 9*16,
+	HM74_NO_MOTION = 8*16
+]

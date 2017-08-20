@@ -1,0 +1,171 @@
+/*
+ * TIATracker music player
+ * Copyright 2016 Andre "Kylearan" Wichmann
+ * Website: https://bitbucket.org/kylearan/tiatracker
+ * Email: andre.wichmann@gmx.de
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Song author: glafouk
+ * Song name: saluatoa
+ */
+
+
+data tt_saluatoa_song {
+    &<tt_saluatoa_InsCtrlTable-1 &>tt_saluatoa_InsCtrlTable-1
+    &<tt_saluatoa_InsADIndexes-1 &>tt_saluatoa_InsADIndexes-1
+    &<tt_saluatoa_InsSustainIndexes-1 &>tt_saluatoa_InsSustainIndexes-1
+    &<tt_saluatoa_InsReleaseIndexes-1 &>tt_saluatoa_InsReleaseIndexes-1
+    &<tt_saluatoa_InsFreqVolTable &>tt_saluatoa_InsFreqVolTable
+    &<tt_saluatoa_PercIndexes-17 &>tt_saluatoa_PercIndexes-17
+    &<tt_saluatoa_PercFreqTable-1 &>tt_saluatoa_PercFreqTable-1
+    &<tt_saluatoa_PercCtrlVolTable-1 &>tt_saluatoa_PercCtrlVolTable-1
+    &<tt_saluatoa_PatternSpeeds &>tt_saluatoa_PatternSpeeds
+    &<tt_saluatoa_SequenceTable &>tt_saluatoa_SequenceTable
+    &<tt_saluatoa_PatternPtrLo &>tt_saluatoa_PatternPtrLo
+    &<tt_saluatoa_PatternPtrHi &>tt_saluatoa_PatternPtrHi
+tt_saluatoa_flags:
+    1 [12-1] [12-1] 0
+tt_saluatoa_initdata:
+    0 21
+    // put any table that might be empty here to avoid warning
+tt_saluatoa_PatternSpeeds:
+    
+}
+
+data tt_saluatoa_InsCtrlTable {
+        0x06 0x04 0x0c
+
+}
+data tt_saluatoa_InsADIndexes {
+        0x00 0x0b 0x0b
+
+}
+data tt_saluatoa_InsSustainIndexes {
+        0x07 0x0b 0x0b
+
+}
+data tt_saluatoa_InsReleaseIndexes {
+        0x08 0x0e 0x0e
+
+}
+data tt_saluatoa_InsFreqVolTable {
+// 0: bassline
+        0x8f 0x8f 0x8f 0x8f 0x8f 0x8f 0x8f 0x80
+        0x00 0x80 0x00
+// 1+2: lead
+        0x86 0x75 0x84 0x00 0x85 0x00
+
+}
+
+data tt_saluatoa_PercIndexes {
+        0x01 0x08
+
+}
+data tt_saluatoa_PercFreqTable {
+// 0: Kick
+        0x07 0x0e 0x02 0x03 0x04 0x05 0x00
+// 1: Snare
+        0x07 0x0d 0x0e 0x10 0x14 0x14 0x15 0x18
+        0x00
+
+}
+data tt_saluatoa_PercCtrlVolTable {
+// 0: Kick
+        0x8f 0x8e 0xee 0xed 0xec 0xe9 0x00
+// 1: Snare
+        0x8e 0x8d 0x8d 0x8c 0x8b 0x8a 0x88 0x88
+        0x00
+
+}
+
+// blank
+data tt_saluatoa_pattern0 {
+        0x08 0x08 0x08 0x08 0x08 0x08 0x08 0x08
+        0x00
+
+}
+// b0a
+data tt_saluatoa_pattern1 {
+        0x2b 0x08 0x2b 0x2b 0x08 0x2b 0x2b 0x08
+        0x2e 0x08 0x2e 0x2e 0x08 0x2e 0x2e 0x08
+        0x00
+
+}
+// b0b
+data tt_saluatoa_pattern2 {
+        0x2c 0x08 0x2c 0x2c 0x08 0x2c 0x2c 0x08
+        0x30 0x08 0x30 0x30 0x08 0x30 0x30 0x08
+        0x00
+
+}
+// d0
+data tt_saluatoa_pattern3 {
+        0x11 0x08 0x12 0x08 0x11 0x08 0x12 0x08
+        0x11 0x08 0x12 0x08 0x11 0x08 0x12 0x12
+        0x00
+
+}
+// d+mel1a
+data tt_saluatoa_pattern4 {
+        0x6d 0x6c 0x12 0x6c 0x11 0x6d 0x12 0x6f
+        0x6d 0x6c 0x12 0x6c 0x11 0x6d 0x12 0x12
+        0x00
+
+}
+// d+mel1b
+data tt_saluatoa_pattern5 {
+        0x6e 0x6d 0x12 0x6d 0x11 0x6e 0x12 0x70
+        0x6e 0x6d 0x12 0x6d 0x11 0x6e 0x12 0x12
+        0x00
+
+}
+// d+mel0a
+data tt_saluatoa_pattern6 {
+        0x57 0x5d 0x12 0x6b 0x11 0x57 0x12 0x5d
+        0x11 0x08 0x12 0x08 0x11 0x08 0x12 0x12
+        0x00
+
+}
+// d+mel0b
+data tt_saluatoa_pattern7 {
+        0x57 0x55 0x12 0x55 0x11 0x08 0x12 0x57
+        0x11 0x57 0x55 0x51 0x11 0x5d 0x12 0x12
+        0x00
+
+}
+ // this one must be renamed manually after since it contains the field name
+data tt_saluatoa_PatternPtrLo {
+        &<tt_saluatoa_pattern0 &<tt_saluatoa_pattern1 &<tt_saluatoa_pattern2 &<tt_saluatoa_pattern3
+        &<tt_saluatoa_pattern4 &<tt_saluatoa_pattern5 &<tt_saluatoa_pattern6 &<tt_saluatoa_pattern7
+
+}
+data tt_saluatoa_PatternPtrHi {
+        &>tt_saluatoa_pattern0 &>tt_saluatoa_pattern1 &>tt_saluatoa_pattern2 &>tt_saluatoa_pattern3
+        &>tt_saluatoa_pattern4 &>tt_saluatoa_pattern5 &>tt_saluatoa_pattern6 &>tt_saluatoa_pattern7
+
+}
+data tt_saluatoa_SequenceTable {
+    // ---------- Channel 0 ----------
+        0x00 0x00 0x00 0x00 0x01 0x01 0x02 0x02
+        0x01 0x01 0x02 0x02 0x01 0x01 0x02 0x02
+        0x01 0x01 0x02 0x02 0x84
+
+    // ---------- Channel 1 ----------
+        0x03 0x03 0x03 0x03 0x03 0x03 0x04 0x04
+        0x05 0x05 0x04 0x04 0x05 0x05 0x06 0x06
+        0x07 0x07 0x97
+
+}

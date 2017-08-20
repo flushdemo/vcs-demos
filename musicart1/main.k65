@@ -1,0 +1,383 @@
+// persistent
+var tt_timer=0x80,          // current music timer value
+    tt_cur_pat_index[2],    // current pattern index into tt_SequenceTable
+    tt_cur_note_index[2],   // note index into current pattern
+    tt_envelope_index[2],   // index into ADSR envelope
+    tt_cur_ins[2],          // current instrument
+    tt_song_ix,             // index into song_table
+    tt_song_ix_next,        // queued song to play after fade out
+    song_delay,             // fade out timer
+    song_time,              // remaining song play time in seconds
+    input_prev,             // previous SWCHA 4 MSB (player 0) value >> 1 | INPT4 MSB (fire player 0)
+    second_slice,           // frame counter, auto-reseting after one second
+    shuffle_ix,             // shuffle table index
+    frames_cnt,             // frame conter, not resetting
+    rng_seed,               // Stores the random number generator seed
+    cur_song_ix,            // current song index, cached for fast access
+    gfx_graph_ix,           // Graph index, graph to be displayed
+    gfx_graph_cnt,          // Counter to delay graph update (and avoid stroboscopic effect)
+    intro_cnt,              // Counter for the intro
+    gfx_type,               // which gfx to display
+// AUDxx shadow registers location
+    AUDC0s,
+    AUDC1s,
+    AUDF0s,
+    AUDF1s,
+    AUDV0s, // The 4 following registers are used - don't overwrite them !
+    AUDV1s,
+    p_AUDF0s,
+    p_AUDF1s,
+    p_AUDV0s, // Storing previous Audio state
+    p_AUDV1s,
+// temporary
+    tt_ptr[2],
+    tt_song[2],             // song data pointer
+    tt_ptrtab[24];
+
+var tmp=0xa1, tmp2;
+var gfx=0xBd;
+
+// gfx_intro vars
+var ss_fxtime[2]=0xbd,ss_scrinpos,ss_fxpart,ss_ptr[12];
+
+// gfx_bg vars
+var gfx_ptr[12]=0xcd,
+    buffer[BUFFER_SIZE];
+
+// print vars
+var print_txt[2]=0xa1,
+    print_line_count,
+    print_ptr;
+
+[
+    JOYSTICK_FIRE           =   0x80
+    JOYSTICK_RIGHT          =   0x40
+    JOYSTICK_LEFT           =   0x20
+    JOYSTICK_DOWN           =   0x10
+
+    TXTCOL_NORMAL           =   0xAA
+    TXTCOL_SHUFFLE          =   0x3A
+
+    TIMEBAR_COLOR           =   0xC8
+
+    INTRO_SCREENS           =   1 // Number of screens during the intro
+]
+
+inline xorshift { // tmp: seed
+    a=tmp a<< a^tmp tmp=a a>> a^tmp tmp=a a<< a<< a^tmp tmp=a
+}
+inline rand { a<< >={ a^0x1d } }
+
+inline get_shuffle_ix_inv { // y = song id to look up
+    x=shuffle_ix tmp=a=song_shuffle_rev_lo,x tmp+1=a=song_shuffle_rev_hi,x a=(tmp),y
+}
+inline get_shuffle_ix {
+    y=shuffle_ix tmp=a=song_shuffle_lo,y tmp+1=a=song_shuffle_hi,y y=tt_song_ix a=(tmp),y
+}
+inline get_song_ix {
+    get_shuffle_ix
+    y=a a=song_table,y
+    cur_song_ix=a
+}
+
+data tb_pf0 {
+    nocross
+    0x00 0x10 0x30 0x70 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+    0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+    0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+    0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+}
+data tb_pf1 {
+    nocross
+    0x00 0x00 0x00 0x00 0x00 0x80 0xC0 0xE0 0xF0 0xF8
+    0xFC 0xFE 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+    0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+    0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+}
+data tb_pf2 {
+    nocross
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x01 0x03 0x07 0x0F 0x1F 0x3F 0x7F
+    0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+    0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+}
+data tb_pf3 {
+    nocross
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x10 0x30 0x70 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+    0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+}
+data tb_pf4 {
+    nocross
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x80 0xC0 0xE0 0xF0 0xF8
+    0xFC 0xFE 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+}
+data tb_pf5 {
+    nocross
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x01 0x03 0x07 0x0F 0x1F 0x3F 0x7F
+}
+data div6 { for x=0..240 eval [ x/6 ] }
+inline timebar
+{
+    y=5 a=0 { tmp,y=a y-- }>=0
+    y=song_time a=div6,y
+    y=a
+    a=frames_cnt a&0x20 =={ y++ }
+    x=4 {
+        wsync
+        * COLUPF=a=TIMEBAR_COLOR
+        PF0=a=tb_pf0,y
+        PF1=a=tb_pf1,y
+        PF2=a=tb_pf2,y
+        PF0=a=tb_pf3,y
+        PF1=a=tb_pf4,y
+        PF2=a=tb_pf5,y
+        x--
+    }>=0
+    wsync PF0=PF1=PF2=a=0
+}
+
+// convert to freq: http://atariage.com/forums/topic/257526-musicsound-programming-question-atari-2600/
+// maps AUDCi to 0-7 3 bits (<<5) value for wave length of: 1, 2, 6, 15, 31, 93, 465, 511
+data wavlen {
+    nocross
+    0x00 0x60 0xC0 0xC0 0x20 0x20 0x80 0x80
+    0xF0 0x80 0x80 0x00 0x40 0x40 0xA0 0xA0
+}
+// registers to frequency range 0-7: [AUDFi | wavlen[AUDCi]] = freq range
+data regfreq {
+    align 256
+    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
+    6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 
+    7 7 7 7 7 7 7 7 6 6 6 6 6 6 6 6 
+    5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 
+    7 7 6 6 6 5 5 5 5 5 4 4 4 4 4 4 
+    4 4 4 4 4 3 3 3 3 3 3 3 3 3 3 3 
+    7 6 5 5 4 4 4 4 3 3 3 3 3 3 3 3 
+    3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
+    6 5 4 4 3 3 3 3 2 2 2 2 2 2 2 2 
+    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+    4 3 2 2 2 1 1 1 1 1 1 0 0 0 0 0 
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+}
+data vm_pf2 {
+    nocross
+    0x00 0x80 0xC0 0xE0 0xF0 0xF8 0xFC 0xFE
+    0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+}
+data vm_pf1 {
+    nocross
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x01 0x03 0x07 0x0F 0x1F 0x3F 0x7F
+}
+data vm_col {
+    nocross
+    0x3C 0x7C 0x9C 0xDC 0x2C 0x4C 0x6C 0xAC
+}
+inline vumeter_init {
+    a=0 y=15 { gfx,y=a y-- }>=0
+}
+inline vumeter_tick {
+    a=0 y=15 { x=gfx,y x-- >=0{ gfx,y=x } y-- }>=0
+    a=AUDF0s y=AUDC0s a|wavlen,y x=a y=regfreq,x
+    a=AUDV0s a?gfx,y >=0{ gfx,y=a }
+    a=AUDF1s y=AUDC1s a|wavlen,y x=a y=regfreq,x
+    a=AUDV1s a?gfx+8,y >=0{ gfx+8,y=a }
+}
+inline vumeter_draw {
+    CTRLPF=a=PF_MIRRORED
+    y=7
+    nocross {
+        tmp=a=21 {
+            wsync
+            COLUPF=a=vm_col,y *4
+            x=gfx,y
+            PF1=a=vm_pf1,x
+            PF2=a=vm_pf2,x
+            *8
+            x=gfx+8,y
+            PF2=a=vm_pf2,x
+            PF1=a=vm_pf1,x
+            tmp--
+        }>=0
+        wsync PF1=PF2=a=0
+        wsync
+        y--
+    }>=0
+    CTRLPF=a=0
+    wsync wsync
+}
+
+data mul24 { for x=0..10 eval [ x*24 ] }
+inline fxkernel
+{
+    a=intro_cnt !={
+      far gfx_40x40
+      goto .end
+    }
+
+    a=song_delay != { far gfx_transition goto .end }
+    a=1 a&gfx_type =={ far gfx_bg goto .fxdone }
+    vumeter_draw
+.fxdone:
+
+    a=cur_song_ix //get_song_ix
+    x=a a>> a>> a>> a>> y=a print_txt=a=songs_meta_lo,y print_txt+1=a=songs_meta_hi,y
+    a=x a&0xf y=a a=mul24,y c- a+print_txt print_txt=a a=print_txt+1 a+0 print_txt+1=a
+    a=2 print
+
+    y=5 { wsync y-- }>=0
+    timebar
+.end:
+}
+
+inline fxoverscan
+{
+}
+
+inline fxvblank
+{
+    a=intro_cnt !={
+      far gfx_40x40_vblank
+      a=intro_cnt !={ goto .end }
+    }
+
+    a=1 a&gfx_type =={ far gfx_update goto .end }
+    vumeter_tick
+
+.end:
+}
+
+inline fxinit
+{
+    COLUP0=COLUP1=a=TXTCOL_NORMAL
+    a=0
+    gfx_graph_cnt=a
+    gfx_graph_ix=a
+    intro_cnt=a=INTRO_SCREENS
+    rng_seed=a=20 far generate_fxrnd
+    far gfx_40x40_setup 
+}
+
+inline toggle_shuffle {
+    get_shuffle_ix tmp+2=a
+    a=shuffle_ix !={ shuffle_ix=a=0 COLUP0=COLUP1=a=TXTCOL_NORMAL goto .done }
+    a=second_slice c- a+frames_cnt a+song_time y=5 { a+AUDC0s,y y-- }>=0
+    c- { a+6 }< a+0 shuffle_ix=a
+    COLUP0=COLUP1=a=TXTCOL_SHUFFLE
+.done:
+    // find back current song in new index list
+    get_shuffle_ix
+    //y=song_count { y-- a=(tmp),y a?tmp+2 }!=
+    //tt_song_ix=y tt_song_ix_next=y
+    y=tmp+2 get_shuffle_ix_inv tt_song_ix_next=tt_song_ix=a
+}
+
+func song_switch {
+    tt_song_ix=y=tt_song_ix_next
+    get_shuffle_ix y=a song_time=a=song_duration,y
+    tt_timer=a=0x80 // request song reset from player
+    a=0 y=8 { tt_timer,y=a y-- }!=
+    y=5 { AUDC0s,y=a y-- }>=0
+    get_song_ix
+}
+
+inline next_song {
+    tt_song_ix_next++ a=song_count a?tt_song_ix_next =={ tt_song_ix_next=a=0 } }
+inline prev_song {
+    tt_song_ix_next-- <0{ tt_song_ix_next=a=song_count tt_song_ix_next-- }
+}
+inline check_input {
+    a=intro_cnt !={ goto .end }
+    a=INPT4 a<< a=SWCHA a>>> a?input_prev =={ goto .end }
+    input_prev=a
+    x=a >=0{ toggle_shuffle }
+    a=JOYSTICK_DOWN a&?input_prev =={ a=1 a^gfx_type gfx_type=a a&1 !={ vumeter_init } }
+    a=JOYSTICK_RIGHT a&?input_prev =={ next_song goto .done }
+    a=JOYSTICK_LEFT a&?input_prev !={ goto .end } prev_song
+.done:
+    song_delay=a=0xE0 // -32
+.end:
+}
+
+inline song_tick {
+    a=cur_song_ix //get_song_ix
+    x=a a>> a>> a>> a>> y=a a=song_players_hi,y a!! a=song_players_lo,y a!!
+    a=x a&0xf y=a
+    return
+}
+
+inline song_norm {
+    // clamp to valid TIA range
+    a=AUDC0s a&0x0f AUDC0s=a a=AUDC1s a&0x0f AUDC1s=a
+    a=AUDF0s a&0x1f AUDF0s=a a=AUDF1s a&0x1f AUDF1s=a
+    a=AUDV0s a&0x0f AUDV0s=a a=AUDV1s a&0x0f AUDV1s=a
+}
+
+data volmul { for x=0..255 eval [ 15*(((x/16)/16)*((x%16)/15)) ] }
+inline song_transition {
+    a=song_delay !={
+        <0{
+            song_delay++
+            =={ /*song_delay=a=16*/ song_switch goto .end }
+            a=song_delay a^0xff c+ a+0// goto .apply
+        }
+        //song_delay-- =={ goto .end }
+        //a=15 c+ a-song_delay
+.apply:
+        a<< a<< a<< /*a<<*/ a&0xf0 a|AUDV0s y=a x=volmul,y AUDV0s=x
+        a&0xf0 a|AUDV1s y=a x=volmul,y AUDV1s=x
+    }
+.end:
+    y=5 { AUDC0,y=a=AUDC0s,y y-- }>=0
+}
+
+inline time_tick {
+    second_slice-- =={
+        second_slice=a=50
+        song_time-- =={
+            next_song
+            song_delay=a=0xE0 // -32
+        }
+    }
+}
+
+main
+{
+	init input_prev=a=SWCHA
+    tt_timer=a=0x80
+    second_slice=a=51
+    song_switch
+    frames_cnt=a=0xff
+    fxinit 
+	{
+        overscan_start
+        frames_cnt++ // Raw frames counter
+        check_input
+        time_tick
+        song_tick
+tt_player_done:
+        song_norm
+        song_transition
+        fxoverscan
+        nocross{overscan_end}
+
+        vblank_start
+        fxvblank
+        nocross{vblank_end}
+
+        screen_start
+        fxkernel
+        nocross{screen_end}
+	} always
+}

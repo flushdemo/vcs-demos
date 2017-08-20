@@ -1,0 +1,256 @@
+/*
+ * TIATracker music player
+ * Copyright 2016 Andre "Kylearan" Wichmann
+ * Website: https://bitbucket.org/kylearan/tiatracker
+ * Email: andre.wichmann@gmx.de
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* =====================================================================
+ * TIATracker Player - minimum version with only GOTO support
+ * =====================================================================
+ */
+
+// PLANNED PLAYER VARIANTS:
+// - RAM, speed, player ROM: c0/c1 patterns have same length
+// - RAM: Pack 2 values (out of cur_pat_index, cur_note_index, envelope_index)
+//       into one and use lsr/asl to unpack them, allowing only ranges of
+//       16/16 or 32/8 for them, depending on number of patterns, max
+//       pattern size and max ADSR size
+// - ROM: Check if tt3_SequenceTable can hold ptrs directly without indexing
+//       tt3_PatternPtrLo/Hi. Can be smaller if not many patterns get repeated
+//       (saves table and decode routine)
+// - Speed: Inline tt3_calcInsIndex
+// - Speed: Store ptr to current note in RAM instead of reconstructing it?
+//       Might also save the need for cur_note_index
+
+
+/* =====================================================================
+ * Modified generic player, with song data pointer instead of fixed
+ * functions and conditional compilation.
+ * Replace tt3_trackdata.k65 template in TIATracker/player/k65 with the
+ * provided file.
+ * =====================================================================
+ */
+
+/* =====================================================================
+ * Helper function: Retrieves current note. May advance pattern if needed.
+ * =====================================================================
+ */
+
+// function with GOTO support
+inline tt3_getSequenceEntry {
+.constructPatPtr:
+    y=tt_cur_pat_index,x
+    a=(tt_ptrtab+TT_SEQUENCETABLE),y <0{
+        a&0b01111111 tt_cur_pat_index,x=a >=0goto .constructPatPtr
+    }
+}
+
+inline tt3_getCurNoteIndex {
+    y=tt_cur_note_index,x
+}
+
+inline tt3_fetchCurrentNote {
+    // Construct pattern pointer
+.constructPatPtr:
+    tt3_getSequenceEntry
+    y=a tt_ptr=a=(tt_ptrtab+TT_PATTERNPTRLO),y tt_ptr+1=a=(tt_ptrtab+TT_PATTERNPTRHI),y
+    // Get new note
+    tt3_getCurNoteIndex a=(tt_ptr),y
+    // Pre-process new note
+    // 7..5: instrument (1..7), 4..0 (0..31): frequency
+    // 0/0: End of pattern
+    =={
+        // End of pattern: Advance to next pattern
+        tt_cur_note_index,x=a       // a is 0
+        tt_cur_pat_index,x++
+        !=goto .constructPatPtr     //unconditional
+    }
+}
+
+/* =====================================================================
+ * Helper subroutine to minimize ROM footprint.
+ * =====================================================================
+ */
+func tt3_calcInsIndex {
+    // move upper 3 bits to lower 3
+    // The lsr opcode has bit 6 set and thus is used for a "bit"
+    // instruction in the player!
+    a>> a>> a>> a>> a>>
+    y=a
+}
+
+
+/* =====================================================================
+ * Sequencer
+ * =====================================================================
+ */
+
+inline tt3_localSetTimer {
+    tt_timer=a=(tt_ptrtab+TT_PATTERNSPEEDS),y
+}
+
+inline tt3_globalGetNextTimerValue {
+}
+
+inline tt3_setTimerValue {
+    y=TT_SPEED x=a=(tt_song),y
+    tt3_globalGetNextTimerValue
+    tt_timer=x
+}
+
+inline tt3_slideHoldSwitch {
+    <goto tt3_finishedNewNote
+    !=goto tt3_newNote
+}
+
+inline tt3_checkForOverlay {
+}
+
+inline tt3_sequencer {
+    // Decrease speed timer
+    tt_timer-- <0{
+        // Timer ran out: Advance to next note for each channel
+        x=1 {
+            tt3_fetchCurrentNote
+            // Parse new note from pattern
+            a?[TT_INS_PAUSE] tt3_slideHoldSwitch
+
+            // --- pause ---
+tt3_pause:
+            // Get release index for current instrument. Since a pause can
+            // only follow an instrument, we don't need to handle percussion
+            // or commands.
+            a=tt_cur_ins,x tt3_calcInsIndex
+            a=(tt_ptrtab+TT_INSRELEASEINDEXES),y      // -1 b/c instruments start at #1
+            // Put it into release. Skip junk byte so index no longer indicates
+            // sustain phase.
+            c- a+1 <goto tt3_storeADIndex    // unconditional
+
+            // --- start instrument or percussion ---
+tt3_newNote:
+            tt_cur_ins,x=a                  // set new instrument
+            // Instrument or percussion?
+            a?[TT_FREQ_MASK+1] >=goto tt3_startInstrument
+
+            // --- start percussion ---
+            // Get index of envelope
+            y=a
+            // -17 because percussion start with 17
+            a=(tt_ptrtab+TT_PERCINDEXES),y
+            !=goto tt3_storeADIndex          // unconditional, since index values are >0
+
+            // --- start instrument ---
+tt3_startInstrument:
+            tt3_checkForOverlay
+            // Put note into attack/decay
+            tt3_calcInsIndex
+            a=(tt_ptrtab+TT_INSADINDEXES),y           // -1 because instruments start at #1
+tt3_storeADIndex:
+            tt_envelope_index,x=a
+
+            // --- Finished parsing new note ---
+tt3_finishedNewNote:
+            // increase note index into pattern
+            tt_cur_note_index,x++
+
+            // Next channel
+            x--
+        }>=0
+
+        // Reset timer
+        tt3_setTimerValue
+    }
+}
+
+
+/* =====================================================================
+ * Update registers
+ * =====================================================================
+ */
+
+inline tt3_checkForStartsWithNotes {
+}
+
+inline tt3_doOverlay {
+	goto tt3_afterAudioUpdate
+}
+
+inline tt3_updateRegisters {
+    x=1 {
+        // Percussion or melodic instrument?
+        a=tt_cur_ins,x tt3_checkForStartsWithNotes
+        a?[TT_FREQ_MASK+1] >=goto tt3_instrument
+
+        // --- Percussion: Get envelope index ---
+        y=tt_envelope_index,x
+        // Set and AUDV value from envelope
+        a=(tt_ptrtab+TT_PERCCTRLVOLTABLE),y       // -1 because values are stored +1
+        !={ tt_envelope_index,x++ }     // 0 means end of percussion data
+        AUDV0s,x=a a>> a>> a>> a>> AUDC0s,x=a
+        // Set AUDF
+        a=(tt_ptrtab+TT_PERCFREQTABLE),y			// -1 because values are stored +1
+		// Bit 7 (overlay) might be set, but is unused in AUDF
+		AUDF0s,x=a
+		tt3_doOverlay
+
+tt3_instrument:
+        // --- Melodic instrument ---
+        // Compute index into ADSR indexes and master Ctrl tables
+		tt3_calcInsIndex
+        // Set AUDC with master value for this instrument, while we are at it
+		AUDC0s,x=a=(tt_ptrtab+TT_INSCTRLTABLE),y
+        // advance ADSR counter and compare to end of Sustain
+		a=tt_envelope_index,x a?(tt_ptrtab+TT_INSRELEASEINDEXES),y =={ a=(tt_ptrtab+TT_INSSUSTAININDEXES),y }
+		y=a
+        // Set volume from envelope
+		a=(tt_ptrtab+TT_INSFREQVOLTABLE),y !={ y++ }	// 0 means end of release has been reached
+		tt_envelope_index,x=y
+        AUDV0s,x=a
+        // Now adjust frequency with ADSR value from envelope
+		a>> a>> a>> a>> c- a+tt_cur_ins,x c+ a-8
+        AUDF0s,x=a
+
+tt3_afterAudioUpdate:
+        // Next channel
+        x--
+    }>=0
+}
+
+inline tt3_setptr
+{
+    y=TT_PTR_SZ-1 { a=(tt_song),y tt_ptrtab,y=a y-- }>=0
+}
+
+inline tt3_init_song
+{
+    tt_timer=a=0
+    y=TT_C0INIT tt_cur_pat_index=a=(tt_song),y y++ tt_cur_pat_index+1=a=(tt_song),y
+}
+
+naked tt3_player_back {
+    address 0xffe9
+    a&?bank_core
+}
+naked tt3_player {
+    address 0xf409
+    tt_song=a=songs3_lo,y tt_song+1=a=songs3_hi,y
+    a&?tt_timer <0{ tt3_init_song }
+    tt3_setptr
+    tt3_sequencer
+    tt3_updateRegisters
+    goto tt3_player_back
+}
+

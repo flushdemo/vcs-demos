@@ -1,0 +1,78 @@
+func ss_loadscreen {
+        y=ss_scrinpos
+        ss_scrinpos++
+        x=ss_anim,y x?255 =={ intro_cnt=a=0 goto .end } //ss_scrinpos=a=0 goto ss_loadscreen }
+        		// scrinpos correspond à la position du curseur dans l'animation
+        ss_ptr=a=&<bonoml0
+        ss_ptr+1=a=&>bonoml0
+        x?0 !={
+            {
+		c- a=ss_ptr a+240 ss_ptr=a
+		a=ss_ptr+1 a+0 ss_ptr+1=a
+		x--
+            }!=
+        }
+
+        y=0 {
+            c- a=ss_ptr,y a+40 ss_ptr+2,y=a
+            a=ss_ptr+1,y a+0 ss_ptr+3,y=a
+            y++ y++ y?16
+        }!=
+.end:
+}
+
+func gfx_40x40_setup {
+    COLUBK=a=0
+    COLUPF=a=255
+    //ss_fxpart=a=30
+    ss_loadscreen
+}
+
+inline prout {
+        wsync
+        PF0=a=(ss_ptr),y
+        PF1=a=(ss_ptr+2),y
+        PF2=a=(ss_ptr+4),y
+        PF0=a=(ss_ptr+6),y
+        PF1=a=(ss_ptr+8),y
+        PF2=a=(ss_ptr+10),y
+}
+
+func gfx_40x40{ 
+
+                x=6 { wsync x-- }!=
+                y=39    //<---------- hauteur de l'image
+                nocross { x=6 { prout x-- }!= y-- y?ss_fxpart }>=0
+                wsync PF0=PF1=PF2=a=0
+}
+
+func gfx_40x40_vblank {
+/* volets
+		a=ss_fxtime
+		ss_fxtime++
+                a?64 =={	// <---------- règle la vitess d'affichage des bandes, le plus haut le plus long
+                    ss_fxtime=a=0
+                    c+ a=ss_fxpart a-10 ss_fxpart=a
+                    a?247 <0{ ss_fxpart=a=30 ss_loadscreen }
+                }
+*/
+
+    a=ss_fxtime a?tt_cur_pat_index =={ goto .done }
+    a=ss_fxtime+1 a?tt_cur_pat_index+1 =={ goto .done }
+    a=1 a?tt_cur_note_index =={ a?tt_cur_note_index+1 =={
+        ss_loadscreen
+        ss_fxtime=a=tt_cur_pat_index
+        ss_fxtime+1=a=tt_cur_pat_index+1
+    } }
+.done:
+/*
+    a=4 a?AUDC0s =={ a=4 a?ss_fxtime !={ ss_loadscreen goto .done } }
+    a=4 a?AUDC1s =={ a=4 a?ss_fxtime+1 !={ ss_loadscreen } }
+.done:
+    ss_fxtime=a=AUDC0s ss_fxtime+1=a=AUDC1s
+*/
+}
+                
+data ss_anim{		// est pointé par scrinpos utilisé dans ss_loadscreen
+	0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0xFF  //<--- si rajout d'un deuxième graphique 0= gfx1 1=gfx 2 etc ... on finit par 255
+}
