@@ -1,0 +1,1314 @@
+{
+    "channels": [
+        {
+            "sequence": [
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 2
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 3
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 2
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 3
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 2
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 3
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 0
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 2
+                },
+                {
+                    "gototarget": 0,
+                    "patternindex": 3
+                }
+            ]
+        },
+        {
+            "sequence": [
+                {
+                    "gototarget": -1,
+                    "patternindex": 5
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 5
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 5
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 5
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 1
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 1
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 1
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 1
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 4
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 4
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 4
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 4
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 6
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 6
+                },
+                {
+                    "gototarget": -1,
+                    "patternindex": 7
+                },
+                {
+                    "gototarget": 0,
+                    "patternindex": 8
+                }
+            ]
+        }
+    ],
+    "evenspeed": 8,
+    "globalspeed": true,
+    "instruments": [
+        {
+            "envelopeLength": 8,
+            "frequencies": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "name": "bassline",
+            "releaseStart": 7,
+            "sustainStart": 6,
+            "version": 1,
+            "volumes": [
+                15,
+                15,
+                15,
+                15,
+                15,
+                15,
+                0,
+                15
+            ],
+            "waveform": 6
+        },
+        {
+            "envelopeLength": 4,
+            "frequencies": [
+                0,
+                -1,
+                0,
+                0
+            ],
+            "name": "Sine",
+            "releaseStart": 3,
+            "sustainStart": 0,
+            "version": 1,
+            "volumes": [
+                8,
+                8,
+                8,
+                8
+            ],
+            "waveform": 16
+        },
+        {
+            "envelopeLength": 2,
+            "frequencies": [
+                0,
+                0
+            ],
+            "name": "---",
+            "releaseStart": 1,
+            "sustainStart": 0,
+            "version": 1,
+            "volumes": [
+                0,
+                0
+            ],
+            "waveform": 16
+        },
+        {
+            "envelopeLength": 2,
+            "frequencies": [
+                0,
+                0
+            ],
+            "name": "---",
+            "releaseStart": 1,
+            "sustainStart": 0,
+            "version": 1,
+            "volumes": [
+                0,
+                0
+            ],
+            "waveform": 16
+        },
+        {
+            "envelopeLength": 2,
+            "frequencies": [
+                0,
+                0
+            ],
+            "name": "---",
+            "releaseStart": 1,
+            "sustainStart": 0,
+            "version": 1,
+            "volumes": [
+                0,
+                0
+            ],
+            "waveform": 16
+        },
+        {
+            "envelopeLength": 2,
+            "frequencies": [
+                0,
+                0
+            ],
+            "name": "---",
+            "releaseStart": 1,
+            "sustainStart": 0,
+            "version": 1,
+            "volumes": [
+                0,
+                0
+            ],
+            "waveform": 16
+        },
+        {
+            "envelopeLength": 2,
+            "frequencies": [
+                0,
+                0
+            ],
+            "name": "---",
+            "releaseStart": 1,
+            "sustainStart": 0,
+            "version": 1,
+            "volumes": [
+                0,
+                0
+            ],
+            "waveform": 16
+        }
+    ],
+    "metaAuthor": "Glafouk",
+    "metaComment": "Crunchy tune taken from\n\nFlush VCS Music Cart Vol.1\n\nhttps://www.pouet.net/prod.php?which=71561\n\nBig up to Exocet,Flewww,g012 & p0ke for making this crazy project alive...\nAnd special danke to Kylearan for his marvelous TIAtracker !",
+    "metaName": "Erzatz Light",
+    "oddspeed": 8,
+    "patterns": [
+        {
+            "evenspeed": 3,
+            "name": "b+d0",
+            "notes": [
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 15
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 15
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 7
+                },
+                {
+                    "number": 0,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 15
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 15
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 15
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 15
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 8
+                },
+                {
+                    "number": 0,
+                    "type": 3,
+                    "value": 7
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 11
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 7
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 8
+                }
+            ],
+            "oddspeed": 3
+        },
+        {
+            "evenspeed": 3,
+            "name": "mel0",
+            "notes": [
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 29
+                },
+                {
+                    "number": 1,
+                    "type": 0,
+                    "value": 58
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 24
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 42
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 42
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 24
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 42
+                },
+                {
+                    "number": 1,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                }
+            ],
+            "oddspeed": 3
+        },
+        {
+            "evenspeed": 3,
+            "name": "b+d1",
+            "notes": [
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 20
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 20
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 11
+                },
+                {
+                    "number": 0,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 20
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 15
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 20
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 20
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 11
+                },
+                {
+                    "number": 0,
+                    "type": 3,
+                    "value": 7
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 11
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 9
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 8
+                }
+            ],
+            "oddspeed": 3
+        },
+        {
+            "evenspeed": 3,
+            "name": "b+d2",
+            "notes": [
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 17
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 17
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 8
+                },
+                {
+                    "number": 0,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 17
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 15
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 17
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 17
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 8
+                },
+                {
+                    "number": 0,
+                    "type": 3,
+                    "value": 7
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 17
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 9
+                },
+                {
+                    "number": 0,
+                    "type": 1,
+                    "value": 8
+                }
+            ],
+            "oddspeed": 3
+        },
+        {
+            "evenspeed": 4,
+            "name": "mel1",
+            "notes": [
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 11
+                },
+                {
+                    "number": 1,
+                    "type": 0,
+                    "value": 16
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 2,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 11
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                }
+            ],
+            "oddspeed": 4
+        },
+        {
+            "evenspeed": 4,
+            "name": "hh+blank",
+            "notes": [
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                }
+            ],
+            "oddspeed": 4
+        },
+        {
+            "evenspeed": 4,
+            "name": "mel2a",
+            "notes": [
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 23
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 29
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                }
+            ],
+            "oddspeed": 4
+        },
+        {
+            "evenspeed": 4,
+            "name": "mel2b",
+            "notes": [
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 2,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 2,
+                    "value": 21
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 2,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 0,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 16
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                }
+            ],
+            "oddspeed": 4
+        },
+        {
+            "evenspeed": 4,
+            "name": "mel2c",
+            "notes": [
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 0,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 2,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 19
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 0,
+                    "value": 21
+                },
+                {
+                    "number": 0,
+                    "type": 2,
+                    "value": 0
+                },
+                {
+                    "number": 0,
+                    "type": 0,
+                    "value": 0
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 2,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 21
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 23
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 29
+                },
+                {
+                    "number": 1,
+                    "type": 1,
+                    "value": 14
+                },
+                {
+                    "number": 1,
+                    "type": 3,
+                    "value": 0
+                }
+            ],
+            "oddspeed": 4
+        }
+    ],
+    "percussion": [
+        {
+            "envelopeLength": 6,
+            "frequencies": [
+                5,
+                27,
+                8,
+                5,
+                5,
+                5
+            ],
+            "name": "Snare",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                15,
+                15,
+                15,
+                9,
+                6,
+                3
+            ],
+            "waveforms": [
+                8,
+                12,
+                6,
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "envelopeLength": 3,
+            "frequencies": [
+                0,
+                0,
+                0
+            ],
+            "name": "Hit",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                4,
+                3,
+                2
+            ],
+            "waveforms": [
+                8,
+                8,
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        },
+        {
+            "envelopeLength": 1,
+            "frequencies": [
+                0
+            ],
+            "name": "---",
+            "overlay": false,
+            "version": 1,
+            "volumes": [
+                0
+            ],
+            "waveforms": [
+                8
+            ]
+        }
+    ],
+    "rowsperbeat": 4,
+    "startpattern0": 0,
+    "startpattern1": 0,
+    "tvmode": "pal",
+    "version": 1
+}
